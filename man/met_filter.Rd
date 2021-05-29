@@ -4,8 +4,12 @@
 \alias{met_filter}
 \title{Make a metric filter object}
 \usage{
-met_filter(metric, operator = c("EQUAL", "LESS_THAN", "GREATER_THAN",
-  "IS_MISSING"), comparisonValue, not = FALSE)
+met_filter(
+  metric,
+  operator = c("EQUAL", "LESS_THAN", "GREATER_THAN", "IS_MISSING"),
+  comparisonValue,
+  not = FALSE
+)
 }
 \arguments{
 \item{metric}{metric name to filter on.}
@@ -17,7 +21,7 @@ met_filter(metric, operator = c("EQUAL", "LESS_THAN", "GREATER_THAN",
 \item{not}{Logical NOT operator. Boolean.}
 }
 \value{
-An object of class \code{met_fil_ga4} for use in \code{\link{filter_clause_ga4}}
+An object of class \code{met_fil_ga4} for use in \code{\link[=filter_clause_ga4]{filter_clause_ga4()}}
 }
 \description{
 Make a metric filter object
@@ -63,7 +67,8 @@ ga_data1 <- google_analytics_4(ga_id,
 
 }
 \seealso{
-Other filter functions: \code{\link{dim_filter}},
-  \code{\link{filter_clause_ga4}}
+Other filter functions: 
+\code{\link{dim_filter}()},
+\code{\link{filter_clause_ga4}()}
 }
 \concept{filter functions}

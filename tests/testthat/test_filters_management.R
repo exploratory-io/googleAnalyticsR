@@ -1,9 +1,8 @@
 source("setup.R")
 
-context("Filter management")
-
 test_that("Get Filter View list", {
   skip_on_cran()
+  skip_on_travis()
   
   fits <- ga_filter_view_list(accountId = accountId, 
                               webPropertyId = webPropId, 
@@ -15,6 +14,7 @@ test_that("Get Filter View list", {
 
 test_that("Get Filter list for account", {
   skip_on_cran()
+  skip_on_travis()
   
   fits <- ga_filter_list(accountId)
   
@@ -24,6 +24,7 @@ test_that("Get Filter list for account", {
 
 test_that("Get Specific Filter", {
   skip_on_cran()
+  skip_on_travis()
   
   fits <- ga_filter(accountId, filterId = "22248057")
   
@@ -33,6 +34,7 @@ test_that("Get Specific Filter", {
 
 test_that("Get Filter View", {
   skip_on_cran()
+  skip_on_travis()
   
   fits <- ga_filter_view(accountId, 
                          webPropertyId = webPropId, 
@@ -47,6 +49,7 @@ test_that("Get Filter View", {
 
 test_that("Add filter to the view", {
   skip_on_cran()
+  skip_on_travis()
   
   Filter <- list(
     name = 'googleAnalyticsR test: Exclude Internal Traffic',
@@ -75,7 +78,7 @@ test_that("Add filter to the view", {
                                             webPropertyId = webPropId2, 
                                             viewId = ga_id2, 
                                             linkId = response$id)
-  expect_equal(response$kind, "analytics#profileFilterLink")
+  expect_equal(response2$kind, "analytics#profileFilterLink")
   expect_equal(response2$rank, 1)
   
   del <- ga_filter_delete(accountId = accountId2, 
@@ -91,6 +94,7 @@ test_that("Add filter to the view", {
 
 test_that("Add filter to the account, but not link", {
   skip_on_cran()
+  skip_on_travis()
   
   Filter <- list(
     name = 'googleAnalyticsR test2: Exclude Internal Traffic',

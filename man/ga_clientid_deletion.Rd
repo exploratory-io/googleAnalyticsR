@@ -4,15 +4,19 @@
 \alias{ga_clientid_deletion}
 \title{Create or update a user deletion request}
 \usage{
-ga_clientid_deletion(userId, propertyId, idType = c("CLIENT_ID",
-  "USER_ID", "APP_INSTANCE_ID"), propertyType = c("ga", "firebase"))
+ga_clientid_deletion(
+  userId,
+  propertyId,
+  idType = c("CLIENT_ID", "USER_ID", "APP_INSTANCE_ID"),
+  propertyType = c("ga", "firebase")
+)
 }
 \arguments{
 \item{userId}{A character vector of user ID's}
 
 \item{propertyId}{The Google Analytics Web property or Firebase ProjectId you are deleting the user from.}
 
-\item{idType}{Type of user. One of \code{APP_INSTANCE_ID, CLIENT_ID or USER_ID}.}
+\item{idType}{Type of user. One of \verb{APP_INSTANCE_ID, CLIENT_ID or USER_ID}.}
 
 \item{propertyType}{Firebase or Google Analytics}
 }
@@ -23,7 +27,7 @@ a data.frame with a row for each userID you sent in, plus a column with its \cod
 The Google Analytics User Deletion API allows customers to process deletions of data associated with a given user identifier.
 }
 \details{
-The user explorer report in Google Analytics can give you the client.id you need to test. 
+The user explorer report in Google Analytics can give you the client.id you need to test.
 
 A data deletion request can be applied to either a Google Analytics web property (specified by \code{propertyType="ga"}) or Firebase application (\code{propertyType="firebase"}). A user whose data will be deleted can be specified by setting one of the identifiers the \code{userId} field. The type of the identifier must be specified inside \code{idType} field.
 
@@ -37,7 +41,7 @@ The API returns a User Deletion Request Resource with \code{deletionRequestTime}
 
 # make sure you are authenticated with user deletion scopes
 options(googleAuthR.scopes.selected = "https://www.googleapis.com/auth/analytics.user.deletion")
-ga_auth(new_user = TRUE)
+ga_auth()
 
 # a vector of ids
 ids <- c("1489547420.1526330722", "1138076389.1526568883")
@@ -54,8 +58,9 @@ ga_clientid_deletion(ids, "UA-1234-2")
 \seealso{
 \url{https://developers.google.com/analytics/devguides/config/userdeletion/v3/}
 
-Other clientid functions: \code{\link{ga_clientid_activity_unnest}},
-  \code{\link{ga_clientid_activity}},
-  \code{\link{ga_clientid_hash}}
+Other clientid functions: 
+\code{\link{ga_clientid_activity_unnest}()},
+\code{\link{ga_clientid_activity}()},
+\code{\link{ga_clientid_hash}()}
 }
 \concept{clientid functions}

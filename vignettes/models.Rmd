@@ -2,12 +2,6 @@
 title: "Statistical models and visualisations with Google Analytics data"
 ---
 
-```{r setup, include=FALSE}
-library(googleAnalyticsR)
-ga_cache_call("cache")
-```
-
-
 Downloading Google Analytics data is all well and good, but the reason most users want to use the API is to then operate and act upon that data.
 
 There are several tutorials linked from the homepage that demonstrate various applications of using `googleAnalyticsR` to analyse data, but they can still be intimidating for new users of R.
@@ -18,49 +12,9 @@ To make it easier to distribute these analysis, `googleAnalyticsR` now includes 
 
 `.gamr` files also includes the ability to create Shiny modules which you can use to quickly create online Shiny dashboards displaying the model results, and which can switch to users own Google Analytics data using the multi-user login capabilities.
 
-The `.gamr` file format can be shared with others online or within your organisation.  A new R package that includes some more advanced examples is available from [`IronistM/googleAnalyticsModelR/`](https://github.com/IronistM/googleAnalyticsModelR/)
+The `.gamr` file format can be shared with others online or within your organisation. 
 
-## Pre-packaged examples
-
-A ready-made model is available in the [`googleAnalyticsModelR` package](https://github.com/IronistM/googleAnalyticsModelR/).  This function loads the pre-made model object created by the `ga_model_*` functions in `googleAnalyticsR`.  
-
-Some examples below (the graphs are interactive when looking on a webpage):
-
-```{r message=FALSE, warning=FALSE}
-library(prophet)
-library(googleAnalyticsR)
-library(googleAnalyticsModelR)
-
-ga_auth(email = Sys.getenv("GARGLE_EMAIL"))
-my_view_id <- 81416156
-
-forecast_data <- ga_model_prophet(my_view_id, interactive_plot = TRUE)
-forecast_data$plot
-```
-
-Time-normalised visits to your website:
-
-```{r message=FALSE, warning=FALSE}
-output <- ga_time_normalised(my_view_id, interactive_plot = TRUE)
-output$plot
-```
-
-As we have a standardised model structure, it makes it easier to use the output in other functions.  For example, you can make a webpage suitable for embedding in Twitter tweets and upload via googleCloudStorageR using `ga_model_tweet()`:
-
-
-```r
-library(googleCloudStorageR)
-
-ga_model_tweet(forecast_data, 
-               "@HoloMarkeD", 
-               title = "ga_model example - prophet forecasting",
-               bucket = "mark-edmondson-public-read")
-
-```
-
-Which embeds in a tweet (you have to click the play icon to activate the visualisation):
-
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Still playing with embedding interactive plots in tweets. These are all made by one R function, googleAnalyticsR::ga_model_tweet : <a href="https://t.co/pos14U9x7j">https://t.co/pos14U9x7j</a> - this is the prophet forecasting example requested by <a href="https://twitter.com/VincentTerrasi?ref_src=twsrc%5Etfw">@VincentTerrasi</a></p>&mdash; Mark Edmondson (@HoloMarkeD) <a href="https://twitter.com/HoloMarkeD/status/1106948306515709954?ref_src=twsrc%5Etfw">March 16, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
+You can also use model objects to create Shiny apps - see [Model Shiny Templates](articles/model-templates.html)
 
 
 ## A simple example loading a model directly
@@ -69,11 +23,9 @@ The above loads models within a wrapper function, but you can also load model ob
 
 The example below performs decomposition on the sessions to your website.  Behind the scenes the model downloads your data with the right columns, applies the decomposition model then plots it, returning the data plotted for you to work with later:
 
-```{r message=FALSE, warning=FALSE}
-library(googleAnalyticsR)  # load library
 
-# authenticate
-ga_auth(email = Sys.getenv("GARGLE_EMAIL"))
+```r
+library(googleAnalyticsR)  # load library
 
 # your own Google Analytics viewID
 my_viewid <- 81416156
@@ -85,23 +37,56 @@ decomp_ga <- ga_model_example("decomp_ga.gamr")
 d1 <- ga_model(my_viewid, model = decomp_ga)
 ```
 
+![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png)
+
 This model allows you to alter the date range of the data fetched:
 
-```{r message=FALSE, warning=FALSE}
+
+```r
 # change default date range to 20 days ago to yesterday
 d2 <- ga_model(my_viewid, model = decomp_ga, date_range = c("20daysAgo","yesterday"))
 ```
 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
+
 You can examine the properties of the model and the arguments it was sent via its print method:
 
-```{r}
+
+```r
 decomp_ga
+```
+
+```
+## ==ga_model object==
+## Description:  Performs decomposition and creates a plot 
+## Data args:    viewId date_range 
+## Input data:   date sessions 
+## Model args:   df 
+## Output args:  x y 
+## Packages:
 ```
 
 You can also see an overview on how a particular call to a model was created by printing out the model's result directly to console:
 
-```{r}
+
+```r
 d2
+```
+
+```
+## ==ga_model_result object==
+## Input names:        date sessions 
+## Input dimensions:   20 2 
+## Output names:       x seasonal trend random figure type 
+## Plot class:         NULL 
+## Model args passed:  date_range = c("20daysAgo", "yesterday") 
+## ==ga_model object==
+## Description:  Performs decomposition and creates a plot 
+## Data args:    viewId date_range 
+## Input data:   date sessions 
+## Model args:   df 
+## Output args:  x y 
+## Packages:
 ```
 
 And if you want to review the code of the model, use `ga_model_write()` to write the functions out to a file.
@@ -110,69 +95,77 @@ And if you want to review the code of the model, use `ga_model_write()` to write
 ga_model_write(decomp_ga, "my_model.R")
 ```
 
-## Shiny modules
+## Shiny templates for ga_model objects
 
-The model can also be used to create a Shiny app, as it creates a [Shiny module](https://shiny.rstudio.com/articles/modules.html) of the model.  It is suggested this is the easiest route to turn your local GA analysis into Shiny apps. 
+There are Shiny templates available that can be used with model objects to quickly create Shiny apps for users.  For example:
 
-An example is shown below, which allows whoever logs in to apply the model to their own Google Analytics data.  You can run the app yourself via:
+```r
+ga_model_shiny("inst/models/decomp_ga.gamr", template = ga_model_shiny_template("template1"))
+```
 
-`shiny::runApp(system.file("shiny/hello-world-models", package="googleAnalyticsR"))`
-
-![](model-shiny-module.png)
-
-The model code is encapsulated in the Shiny module so the actual Shiny app is relatively simple:
+Templates can be created and parsed via `{{ var }}` templating rules.  The default variables used in all templates are `web_json`, `scopes` (for Google auth), and `title`.  You can pass other template specific ones via the `...` argument.  The `ga_model` argument is used to load the previously created `ga_model` object into the Shiny app. 
 
 ```r
 library(shiny)
 library(googleAuthR)
-library(googleAnalyticsR) 
+library(googleAnalyticsR)
 
-gar_set_client(web_json = "ga-web-client.json",
-               scopes = "https://www.googleapis.com/auth/analytics.readonly")
+gar_set_client(web_json = "{{ web_json }}",
+               scopes = "{{ scopes }}")
 
 # loads a pre-existing model
-model <- ga_model_example("decomp_ga.gamr", location = "googleAnalyticsR")
+model <- ga_model_load("{{ ga_model }}")
+
+modelUi <- model$shiny_module$ui
+modelServer <- model$shiny_module$server
 
 ## ui.R
-ui <- fluidPage(title = "googleAnalyticsR Test Deployment",
-                
+ui <- fluidPage(title = "{{ shiny_title }}",
                 authDropdownUI("auth_menu"),
                 h2("Model Description"),
                 textOutput("model_description"),
                 h2("Model Output"),
-                model$shiny_module$ui("model1")
+                modelUi("{{ ga_model_name }}")
                 
 )
 
 ## server.R
 server <- function(input, output, session){
   
-  gar_shiny_auth(session)
+  token <- gar_shiny_auth(session)
   
-  al <- reactive(ga_account_list())
+  al <- reactive({
+    req(token)
+    ga_account_list()
+  })
   
   # module for authentication
   view_id <- callModule(authDropdown, "auth_menu", ga.table = al)
   output$model_description <- renderText(model$description)
   
   # module to display model results
-  callModule(model$shiny_module$server, "model1", view_id = view_id)
+  modelServer("{{ ga_model_name }}", view_id = view_id)
   
 }
 
 shinyApp(gar_shiny_ui(ui, login_ui = silent_auth), server)
-
 ```
 
-If you want to pass reactive input objects to your model's module, do so by wrapping them in `shiny::reactive()` e.g.
+### Models and Templates included with googleAnalyticsR
 
-```r
-  callModule(model$shiny_module$server,
-             "model1",
-             view_id = view_id,
-             reactive_var = reactive(input$my_option))
-```
+There are some pre-created models and templates to help inspire your own.  At the moment these are:
 
+*Models - accessed via `ga_model_example()`*
+
+* `"ga4-trend"` - Fetch GA4 time-series, display via Dygraphs
+* `"ga-effect"` - Fetch UA time-series and use with CausalImpact
+* `"decomp_ga"` - Fetch UA time-series and perform decomposition on them.
+
+*Templates - accessed via `ga_model_shiny_template()`*
+
+* `"template_ga4"` - A basic Shiny dashboard with an account selector for GA4
+* `"template_ua"` - A basic Shiny dashboard with an account selector for UA
+* `"shinydashboard_ga4"` - Account selector for GA4 plus date picker using `library(shinydashboard)` styling.
 
 
 ## Creating model `.gamr` objects
@@ -230,7 +223,8 @@ The more arguments you provide to the model creation functions, the more complic
 
 For instance, you could modify the above model to allow the end user to specify the metric, timespan and seasonality of the decomposition:
 
-```{r}
+
+```r
 get_model_data <- function(viewId,
                            date_range = c(Sys.Date()- 300, Sys.Date()),
                            metric,
@@ -258,21 +252,34 @@ decomp_ga_advanced <- ga_model_make(get_model_data,
                            description = "Performs decomposition and creates a plot",
                            outputShiny = shiny::plotOutput,
                            renderShiny = shiny::renderPlot)
-                           
 ```
 
 It would then be used via:
 
-```{r message=FALSE, warning=FALSE}
+
+```r
 result <- ga_model(81416156, decomp_ga_advanced, metric="users", frequency = 30)
 ```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
 
 ### Working with the model object
 
 The model objects prints to console in a friendly manner:
 
-```{r}
+
+```r
 decomp_ga_advanced
+```
+
+```
+## ==ga_model object==
+## Description:  Performs decomposition and creates a plot 
+## Data args:    viewId date_range metric 
+## Input data:   date 
+## Model args:   df frequency 
+## Output args:  x y 
+## Packages:
 ```
 You can save and load model objects from a file.  It is suggested to save them with the `.gamr` suffix.
 
@@ -292,8 +299,18 @@ ga_model(81416156, "my_model.gamr")
 
 If you need to change parts of a model, `ga_model_edit()` lets you change individual aspects:
 
-```{r message=FALSE, warning=FALSE}
+
+```r
 ga_model_edit(decomp_ga_advanced, description = "New description")
+```
+
+```
+## ==ga_model object==
+## Description:  New description 
+## Data args:    viewId date_range metric 
+## Input data:   date 
+## Model args:   df frequency 
+## Packages:
 ```
 
 You can also pass it the filename, which will load, make the edit, then save the model to disk again:
@@ -304,17 +321,55 @@ ga_model_edit("my_model.gamr", description = "New description")
 
 If you want to examine or change the functions in a model, you can use `ga_model_write()` to write them to a file, or examine them directly from the model object.  The structure of the model object can be examined using `str()`:
 
-```{r}
+
+```r
 str(decomp_ga_advanced, give.attr = FALSE)
+```
+
+```
+## List of 7
+##  $ data_f           :function (viewId, date_range = c(Sys.Date() - 300, Sys.Date()), metric, ...)  
+##  $ required_columns : chr "date"
+##  $ model_f          :function (df, frequency, ...)  
+##  $ output_f         :function (x, y, ...)  
+##  $ required_packages: NULL
+##  $ description      : chr "Performs decomposition and creates a plot"
+##  $ shiny_module     :List of 2
+##   ..$ ui    :function (id, ...)  
+##   ..$ server:function (input, output, session, view_id, ...)
 ```
 
 And you can access various elements by the usual list methods:
  
-```{r}
+
+```r
 decomp_ga_advanced$data_f
+```
 
+```
+## function(viewId,
+##                            date_range = c(Sys.Date()- 300, Sys.Date()),
+##                            metric,
+##                            ...){
+##    o <- google_analytics(viewId,
+##                     date_range = date_range,
+##                     metrics = metric,
+##                     dimensions = "date",
+##                     max = -1)
+##     # rename the metric column so its found for modelling
+##     o$the_metric <- o[, metric]
+##     
+##     o
+##     
+##  }
+```
 
+```r
 decomp_ga_advanced$description
+```
+
+```
+## [1] "Performs decomposition and creates a plot"
 ```
 
 
@@ -328,7 +383,8 @@ This example model is available via `ga_model_example("ga-effect.gamr")`
 
 The data will focus on sessions per channel grouping.  For this example the end user can select the date range, but we set a default of the last 600 days.
 
-```{r}
+
+```r
 get_ci_data <- function(viewId, 
                         date_range = c(Sys.Date()-600, Sys.Date()),
                         ...){
@@ -345,7 +401,8 @@ The modelling step is copied over from the [dartistics.com time-services example
 
 The function transforms the data into the right shape, and performs the CausalImpact model.  The user can select the event date to examine, the channel to test (response) and possible predictors to help the model.
 
-```{r}
+
+```r
 # response_dim is the channel to predict.
 # predictors help with forecast
 do_ci <- function(df, 
@@ -389,7 +446,8 @@ do_ci <- function(df,
 
 Finally the CausalImpact model is sent into Dygraphs for interactive visualisation.  The event date is the same as the one sent to the modelling step, and used to indicate it on the plot:
 
-```{r}
+
+```r
 dygraph_plot <- function(impact, event_date, ...){
 
   ## the data for the plot is in here
@@ -410,13 +468,15 @@ dygraph_plot <- function(impact, event_date, ...){
 
 The main functions done, we now specify which R packages the model needs the user to load.  
 
-```{r}
+
+```r
 req_packs <- c("CausalImpact", "xts", "tidyr", "googleAnalyticsR", "assertthat", "dygraphs")
 ```
 
 Finally we make the model, specifying which columns we expect the data to fetch, a description and specifying which Shiny functions are needed to show the dygraph if the model is used in a Shiny app.
 
-```{r}
+
+```r
 ci_model <- ga_model_make(get_ci_data,
                           required_columns = c("date","channelGrouping","sessions"),
                           model_f = do_ci,
@@ -429,6 +489,16 @@ ci_model <- ga_model_make(get_ci_data,
 ci_model
 ```
 
+```
+## ==ga_model object==
+## Description:  Causal Impact on channelGrouping data 
+## Data args:    viewId date_range 
+## Input data:   date channelGrouping sessions 
+## Model args:   df event_date response predictors 
+## Output args:  impact event_date 
+## Packages:     CausalImpact xts tidyr googleAnalyticsR assertthat dygraphs
+```
+
 
 ```r
 # save it to a file for use later
@@ -437,14 +507,13 @@ ga_model_save(ci_model, "causalImpact_model.gamr")
 
 To use and make an interactive plot:
 
-```{r message=FALSE, warning=FALSE}
+
+```r
 library(googleAnalyticsR)
 library(CausalImpact)
 library(xts)
 library(tidyr)
 library(dygraphs)
-
-ga_auth(email = Sys.getenv("GARGLE_EMAIL"))
 
 ci <- ga_model(81416156, ci_model, event_date = as.Date("2019-01-01"))
 
@@ -452,15 +521,9 @@ ci <- ga_model(81416156, ci_model, event_date = as.Date("2019-01-01"))
 ci$plot
 ```
 
-That can display interactively in a tweet:
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
 
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">An example for the documentation - CausalImpact/Dygraphs with ga_models <a href="https://t.co/9qfvi3uvLc">https://t.co/9qfvi3uvLc</a></p>&mdash; Mark Edmondson (@HoloMarkeD) <a href="https://twitter.com/HoloMarkeD/status/1106958249130119169?ref_src=twsrc%5Etfw">March 16, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
+You can launch this in a Shiny app via the `ga_model_shiny()` function that will write the Shiny code for you - see [Model Shiny Templates](articles/model-templates.html)
 
-Similarly, you can launch this in a Shiny app by slightly modifying the Shiny example used previously.  
-
-This is available within the package via `shiny::runApp(system.file("shiny/models-ga-effect", package="googleAnalyticsR"))`
-
-![](model-ga-effect.png)
-
-Dress it up in a nice theme and add some more inputs and outputs and you are close to the finished result.
+![](ga_model_shiny1.png)
 

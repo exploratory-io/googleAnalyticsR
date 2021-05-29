@@ -1,3 +1,21 @@
+#' Parse getUniversalMetadata
+#' @seealso https://developers.google.com/analytics/trusted-testing/analytics-data/rest/v1alpha/TopLevel/getUniversalMetadata
+#' @param x The response
+#' @noRd
+#' @keywords internal
+#' @importFrom dplyr bind_rows
+parse_ga_meta_aw <- function(x){
+
+  dims <- x$dimensions
+  mets <- x$metrics
+  
+  dims$class <- "dimension"
+  mets$class <- "metric"
+  
+  bind_rows(dims, mets)
+}
+
+
 #' A common pattern for management API parsing
 #' @param x The response
 #' @param kind The kind of response
@@ -5,7 +23,7 @@
 #' @noRd
 management_api_parsing <- function(x, kind){
   assert_that(x$kind %in% kind)
-  myMessage("Fetching ", x$kind, level = 3)
+  myMessage("Fetching", x$kind, level = 3)
   
   if(x$totalResults == 0){
     myMessage("No results found")
@@ -13,7 +31,7 @@ management_api_parsing <- function(x, kind){
   }
   
   if(is.null(check_empty(x$items))){
-    myMessage("No ", kind, " found ", level = 3)
+    myMessage("No", kind, "found", level = 3)
     return(NULL)
   }
   
@@ -69,9 +87,10 @@ google_analytics_4_parse_batch <- function(response_list){
 
 #' ga v4 data parsing
 #'
-#' x is response_list$reports[[1]] from google_analytics_4_parse_batch
+#' x is `response_list$reports[[1]]` from google_analytics_4_parse_batch
 #' @importFrom stats setNames
 #' @keywords internal
+#' @noRd
 google_analytics_4_parse <- function(x){
   
   myMessage("Parsing GA API v4", level = 1)
@@ -91,7 +110,7 @@ google_analytics_4_parse <- function(x){
   timelr <- NULL
   if(!is.null(x$data$dataLastRefreshed)){
     # convert timezone to locale
-    timelr <- format(timestamp_to_r(x$data$dataLastRefreshed))
+    timelr <- format(iso8601_to_r(x$data$dataLastRefreshed))
     myMessage("API data last refreshed: ",timelr, level = 3)
   }
   
@@ -240,7 +259,7 @@ parse_ga_account_summary <- function(x){
 }
 
 
-parse_google_analytics <- function(x){
+parse_google_analytics3 <- function(x){
 
   myMessage("Request to profileId: ", x$profileInfo$profileId,
           #     " accountId: ", x$profileInfo$accountId,
@@ -255,7 +274,7 @@ parse_google_analytics <- function(x){
   if(!is.null(x$containsSampledData)){
     if(x$containsSampledData) {
       samplePercent <- round(100 * (as.numeric(x$sampleSize) / as.numeric(x$sampleSpace)), 2)
-      myMessage("Data is sampled, based on ", samplePercent, "% of visits. Use samplingLevel='WALK' to mitigate it.", level = 3 )
+      myMessage("Data is sampled, based on ", samplePercent, "% of visits.", level = 3 )
     }
   }
 
@@ -275,6 +294,7 @@ parse_google_analytics <- function(x){
   attr(gadata, "profileInfo") <- x$profileInfo
   attr(gadata, "dateRange") <- list(startDate = x$query$`start-date`, endDate = x$query$`end-date`)
   attr(gadata, "totalResults") <- x$totalResults
+  attr(gadata, "nextLink") <- x$nextLink
 
   gadata
 }

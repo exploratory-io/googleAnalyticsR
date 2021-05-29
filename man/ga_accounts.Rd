@@ -13,7 +13,7 @@ A \code{data.frame} with accountid, name, an R datetime object (\code{POSIXct}) 
 This gets a list of account meta data, that can be used in other management API functions.
 }
 \details{
-This gets the meta data associated with the accounts you have access to with your user.  
+This gets the meta data associated with the accounts you have access to with your user.
 If you want all information such as web properties and viewIds, use \link{ga_account_list} instead.
 }
 \examples{
@@ -27,9 +27,11 @@ ga_accounts()
 }
 }
 \seealso{
-Other account structure functions: \code{\link{ga_account_list}},
-  \code{\link{ga_view_list}}, \code{\link{ga_view}},
-  \code{\link{ga_webproperty_list}},
-  \code{\link{ga_webproperty}}
+Other account structure functions: 
+\code{\link{ga_account_list}()},
+\code{\link{ga_view_list}()},
+\code{\link{ga_view}()},
+\code{\link{ga_webproperty_list}()},
+\code{\link{ga_webproperty}()}
 }
 \concept{account structure functions}

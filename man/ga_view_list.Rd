@@ -15,7 +15,7 @@ ga_view_list(accountId, webPropertyId)
 A \code{data.frame} of meta-data for the views
 }
 \description{
-This gets the meta data associated with the Google Analytics Views for a particular accountId and webPropertyId.  
+This gets the meta data associated with the Google Analytics Views for a particular accountId and webPropertyId.
 If you want all viewId information for all accounts you have access to, use \link{ga_account_list} instead.
 }
 \examples{
@@ -27,9 +27,11 @@ views <- ga_view_list(1058095, "UA-1058095-1")
 }
 }
 \seealso{
-Other account structure functions: \code{\link{ga_account_list}},
-  \code{\link{ga_accounts}}, \code{\link{ga_view}},
-  \code{\link{ga_webproperty_list}},
-  \code{\link{ga_webproperty}}
+Other account structure functions: 
+\code{\link{ga_account_list}()},
+\code{\link{ga_accounts}()},
+\code{\link{ga_view}()},
+\code{\link{ga_webproperty_list}()},
+\code{\link{ga_webproperty}()}
 }
 \concept{account structure functions}

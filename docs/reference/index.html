@@ -8,23 +8,36 @@
 
 <title>Function reference • googleAnalyticsR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/paper/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -35,7 +48,6 @@
 
 <meta property="og:title" content="Function reference" />
 <meta property="og:image" content="https://code.markedmondson.me/googleAnalyticsR/logo.png" />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -60,9 +72,10 @@
   gtag('config', 'UA-47480439-2');
 </script>
 
+
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-index">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -76,7 +89,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">googleAnalyticsR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.7.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
       </span>
     </div>
 
@@ -84,20 +97,20 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home"></span>
+    <span class="fas fa-home"></span>
      
   </a>
 </li>
 <li>
   <a href="../articles/setup.html">
-    <span class="fa fa-wrench"></span>
+    <span class="fas fa-wrench"></span>
      
     Setup
   </a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    <span class="fa fa-table"></span>
+    <span class="fas fa-table"></span>
      
     Reporting APIs
      
@@ -105,36 +118,50 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="../articles/reporting-ga4.html">
+        <span class="fas fa-digital-tachograph"></span>
+         
+        GA4 Data API
+      </a>
+    </li>
+    <li>
+      <a href="../articles/measurement-protocol-v2.html">
+        <span class="fas fa-upload"></span>
+         
+        Measurement Protocol
+      </a>
+    </li>
+    <li>
       <a href="../articles/v4.html">
-        <span class="fa fa-cogs"></span>
+        <span class="fas fa-cogs"></span>
          
         v4 API
       </a>
     </li>
     <li>
       <a href="../articles/user-activity.html">
-        <span class="fa fa-user"></span>
+        <span class="fas fa-user"></span>
          
         User Activity API
       </a>
     </li>
     <li>
       <a href="../articles/v3.html">
-        <span class="fa fa-cog"></span>
+        <span class="fas fa-cog"></span>
          
         v3 API
       </a>
     </li>
     <li>
       <a href="../articles/big-query.html">
-        <span class="fa fa-search"></span>
+        <span class="fas fa-search"></span>
          
         BigQuery
       </a>
     </li>
     <li>
       <a href="../articles/ganalytics.html">
-        <span class="fa fa-bullseye"></span>
+        <span class="fas fa-bullseye"></span>
          
         ganalytics
       </a>
@@ -143,14 +170,14 @@
 </li>
 <li>
   <a href="../articles/management.html">
-    <span class="fa fa-briefcase"></span>
+    <span class="fas fa-briefcase"></span>
      
     Management API
   </a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    <span class="fa fa-file"></span>
+    <span class="fas fa-file"></span>
      
     Publishing
      
@@ -159,30 +186,48 @@
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../articles/shiny.html">
-        <span class="fa fa-cloud-upload"></span>
+        <span class="fas fa-cloud-upload"></span>
          
         Shiny
       </a>
     </li>
     <li>
       <a href="../articles/rmarkdown.html">
-        <span class="fa fa-pencil-square"></span>
+        <span class="fas fa-pencil-square"></span>
          
         RMarkdown
       </a>
     </li>
   </ul>
 </li>
-<li>
-  <a href="../articles/models.html">
-    <span class="fa fa-calculator"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    <span class="fas fa-calculator"></span>
      
     Models
+     
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/models.html">
+        <span class="fas fa-calculator"></span>
+         
+        Creating Models
+      </a>
+    </li>
+    <li>
+      <a href="../articles/model-templates.html">
+        <span class="fas fa-photo-video"></span>
+         
+        Shiny Model Templates
+      </a>
+    </li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    <span class="fa fa-question-circle"></span>
+    <span class="fas fa-question-circle"></span>
      
     Help
      
@@ -191,28 +236,28 @@
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../reference/index.html">
-        <span class="fa fa-book-reader"></span>
+        <span class="fas fa-book-reader"></span>
          
         Function Reference
       </a>
     </li>
     <li>
       <a href="../news/index.html">
-        <span class="fa fa-newspaper"></span>
+        <span class="fas fa-newspaper"></span>
          
         News
       </a>
     </li>
     <li>
       <a href="../articles/faq.html">
-        <span class="fa fa-glasses"></span>
+        <span class="fas fa-glasses"></span>
          
         FAQs
       </a>
     </li>
     <li>
       <a href="../articles/practical-tips.html">
-        <span class="fa fa-bicycle"></span>
+        <span class="fas fa-bicycle"></span>
          
         Practical tips
       </a>
@@ -221,7 +266,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/MarkEdmondson1234/googleAnalyticsR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -229,6 +279,7 @@
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -252,12 +303,23 @@
           <p class="section-desc"><p>Setting up your environment so you can connect to the API</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
           <p><code><a href="ga_auth.html">ga_auth()</a></code> </p>
         </td>
         <td><p>Authenticate with Google Analytics OAuth2</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_auth_setup.html">ga_auth_setup()</a></code> </p>
+        </td>
+        <td><p>Setup wizard for authentication options</p></td>
       </tr><tr>
         
         <td>
@@ -272,12 +334,23 @@
           <p class="section-desc"><p>Getting data from your Google Analytics account</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
           <p><code><a href="google_analytics.html">google_analytics()</a></code> <code><a href="google_analytics.html">google_analytics_4()</a></code> </p>
         </td>
         <td><p>Get Google Analytics v4 data</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_data.html">ga_data()</a></code> </p>
+        </td>
+        <td><p>Google Analytics Data for GA4 (App+Web)</p></td>
       </tr><tr>
         
         <td>
@@ -294,10 +367,95 @@
     </tbody><tbody>
       <tr>
         <th colspan="2">
+          <h2 id="section-data-api-google-analytics-" class="hasAnchor"><a href="#section-data-api-google-analytics-" class="anchor"></a>Data API - Google Analytics 4</h2>
+          <p class="section-desc"><p>Working with the Data API (App+Web) for Google Analytics 4</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="ga_data.html">ga_data()</a></code> </p>
+        </td>
+        <td><p>Google Analytics Data for GA4 (App+Web)</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_data_filter.html">ga_data_filter()</a></code> </p>
+        </td>
+        <td><p>Filter DSL for GA4 filters</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_data_aggregations.html">ga_data_aggregations()</a></code> </p>
+        </td>
+        <td><p>Extract metric aggregations from a ga_data result</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_data_order.html">ga_data_order()</a></code> </p>
+        </td>
+        <td><p>Order DSL for GA4 OrderBy</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-measurement-protocol-v-" class="hasAnchor"><a href="#section-measurement-protocol-v-" class="anchor"></a>Measurement Protocol v2</h2>
+          <p class="section-desc"><p>Send data into GA4 with the Measurement Protocol</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="ga_mp_cid.html">ga_mp_cid()</a></code> </p>
+        </td>
+        <td><p>Generate a random client_id</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_mp_event.html">ga_mp_event()</a></code> </p>
+        </td>
+        <td><p>Create a Measurement Protocol Event</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_mp_event_item.html">ga_mp_event_item()</a></code> </p>
+        </td>
+        <td><p>Create an Measurement Protocol Item Property for an Event</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_mp_send.html">ga_mp_send()</a></code> <code><a href="ga_mp_send.html">ga_mp_connection()</a></code> </p>
+        </td>
+        <td><p>Make a Measurement Protocol v2 request</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_trackme_event.html">ga_trackme()</a></code> <code><a href="ga_trackme_event.html">ga_trackme_event()</a></code> </p>
+        </td>
+        <td><p>Opt in or out of googleAnalyticsR usage tracking</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
           <h2 id="section-reporting-api-v-objects" class="hasAnchor"><a href="#section-reporting-api-v-objects" class="anchor"></a>Reporting API v4 objects</h2>
           <p class="section-desc"><p>Creating objects for more advanced v4 Reporting API fetches</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -342,6 +500,11 @@
           <p class="section-desc"><p>Creating segments for v4 reporting API fetches</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -380,6 +543,11 @@
           <p class="section-desc"><p>Useful functions for working with the Google Analytics data</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -398,6 +566,18 @@
           <p><code><a href="ga_meta.html">ga_meta()</a></code> </p>
         </td>
         <td><p>Get current dimensions and metrics available in GA API.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="meta.html">meta</a></code> </p>
+        </td>
+        <td><p>Google Analytics API metadata</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="meta4.html">meta4</a></code> </p>
+        </td>
+        <td><p>Google Analytics API metadata</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -406,30 +586,47 @@
           <p class="section-desc"><p>Using Google Analytics with Shiny</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
+        
+        <td>
+          <p><code><a href="accountPicker.html">accountPickerUI()</a></code> <code><a href="accountPicker.html">accountPicker()</a></code> </p>
+        </td>
+        <td><p>accountPicker UI Shiny Module - pick GA4 accounts/webProperties in Shiny</p></td>
+      </tr><tr>
         
         <td>
           <p><code><a href="authDropdown.html">authDropdown()</a></code> </p>
         </td>
-        <td><p>authDropdown [Shiny Module]</p></td>
+        <td><p>authDropdown Shiny Module</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="authDropdownUI.html">authDropdownUI()</a></code> </p>
         </td>
-        <td><p>authDropdown UI [Shiny Module]</p></td>
+        <td><p>authDropdown UI Shiny Module</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="multi_select.html">multi_select()</a></code> </p>
         </td>
-        <td><p>multi_select [Shiny Module]</p></td>
+        <td><p>multi_select Shiny Module</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="multi_selectUI.html">multi_selectUI()</a></code> </p>
         </td>
-        <td><p>multi_select UI [Shiny Module]</p></td>
+        <td><p>multi_select UI Shiny Module</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="metricDimensionSelect.html">metricDimensionSelectUI()</a></code> <code><a href="metricDimensionSelect.html">metricDimensionSelect()</a></code> </p>
+        </td>
+        <td><p>metricDimensionSelectUI - GA4 Shiny Module</p></td>
       </tr><tr>
         
         <td>
@@ -446,42 +643,27 @@
     </tbody><tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-advanced-fetching-options" class="hasAnchor"><a href="#section-advanced-fetching-options" class="anchor"></a>Advanced fetching options</h2>
-          <p class="section-desc"><p>Building your own Google Analytics API requests</p></p>
-        </th>
-      </tr>
-      <tr>
-        
-        <td>
-          <p><code><a href="make_ga_4_req.html">make_ga_4_req()</a></code> </p>
-        </td>
-        <td><p>Make a Google Analytics v4 API fetch</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fetch_google_analytics_4.html">fetch_google_analytics_4()</a></code> </p>
-        </td>
-        <td><p>Fetch multiple GAv4 requests</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fetch_google_analytics_4_slow.html">fetch_google_analytics_4_slow()</a></code> </p>
-        </td>
-        <td><p>Fetch GAv4 requests one at a time</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
           <h2 id="section-model-functions" class="hasAnchor"><a href="#section-model-functions" class="anchor"></a>Model functions</h2>
           <p class="section-desc"><p>Functions to create and use models with your Google Analytics data</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
           <p><code><a href="ga_model.html">ga_model()</a></code> </p>
         </td>
-        <td><p>Use a model function created by ga_model_make</p></td>
+        <td><p>Use a model</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_model_edit.html">ga_model_edit()</a></code> </p>
+        </td>
+        <td><p>Edit a created ga_model</p></td>
       </tr><tr>
         
         <td>
@@ -503,9 +685,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="ga_model_edit.html">ga_model_edit()</a></code> </p>
+          <p><code><a href="ga_model_refresh.html">ga_model_refresh()</a></code> </p>
         </td>
-        <td><p>Edit a created ga_model</p></td>
+        <td><p>Refresh a model</p></td>
       </tr><tr>
         
         <td>
@@ -515,15 +697,27 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="ga_model_write.html">ga_model_write()</a></code> </p>
+          <p><code><a href="ga_model_shiny.html">ga_model_shiny()</a></code> </p>
         </td>
-        <td><p>Write the ga_model functions to a file</p></td>
+        <td><p>Create a Shiny app from a ga_model file</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="ga_model_tweet.html">ga_model_tweet()</a></code> </p>
+          <p><code><a href="ga_model_shiny_load.html">ga_model_shiny_load()</a></code> </p>
         </td>
-        <td><p>Upload an interactive visualisation so it can be embedded in a tweet</p></td>
+        <td><p>Load one model into a Shiny template</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_model_shiny_template.html">ga_model_shiny_template()</a></code> </p>
+        </td>
+        <td><p>Get a Shiny template file</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_model_write.html">ga_model_write()</a></code> </p>
+        </td>
+        <td><p>Write the ga_model functions to a file</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -532,6 +726,11 @@
           <p class="section-desc"><p>Viewing the account &gt; webproperty &gt; view structure</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -576,6 +775,11 @@
           <p class="section-desc"><p>Tools to work with the AdWords integrations of Google Analytics</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -594,6 +798,18 @@
           <p><code><a href="ga_adwords.html">ga_adwords()</a></code> </p>
         </td>
         <td><p>Get AdWords Link meta data</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_adwords_add_linkid.html">ga_adwords_add_linkid()</a></code> </p>
+        </td>
+        <td><p>Creates a Google Analytics webProperty-Google Ads link</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ga_adwords_delete_linkid.html">ga_adwords_delete_linkid()</a></code> </p>
+        </td>
+        <td><p>Deletes a Google Analytics webProperty-Google Ads link</p></td>
       </tr><tr>
         
         <td>
@@ -632,6 +848,11 @@
           <p class="section-desc"><p>Uploading data to your Google Analytics web property</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -670,6 +891,11 @@
           <p class="section-desc"><p>Manipulate the filters that are applied to your Google Analytics Views</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -732,6 +958,11 @@
           <p class="section-desc"><p>Manipulate the goals defined for your Google Analytics Views</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -764,6 +995,11 @@
           <p class="section-desc"><p>Get your GA360 unsampled reports</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -782,7 +1018,7 @@
           <p><code><a href="ga_unsampled_download.html">ga_unsampled_download()</a></code> </p>
         </td>
         <td><p>Download Unsampled Report from Google Drive. You must be authenticated with the
-same account that you setup the unsampled report. This means service account 
+same account that you setup the unsampled report. This means service account
 authentication is not supported.</p></td>
       </tr>
     </tbody><tbody>
@@ -792,6 +1028,11 @@ authentication is not supported.</p></td>
           <p class="section-desc"><p>Work with users of your Google Analytics account</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -830,6 +1071,11 @@ authentication is not supported.</p></td>
           <p class="section-desc"><p>Work with individual website visitor IDs</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -862,6 +1108,11 @@ authentication is not supported.</p></td>
           <p class="section-desc"><p>Work with custom dimensions and metrics for your Google Analytics account</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -894,6 +1145,11 @@ authentication is not supported.</p></td>
           <p class="section-desc"><p>Work with experiment objects</p></p>
         </th>
       </tr>
+      
+      
+    </tbody><tbody>
+      
+      
       <tr>
         
         <td>
@@ -911,30 +1167,13 @@ authentication is not supported.</p></td>
     </table>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-authentication-and-setup">Authentication and Setup</a></li>
-      <li><a href="#section-reporting-api">Reporting API</a></li>
-      <li><a href="#section-reporting-api-v-objects">Reporting API v4 objects</a></li>
-      <li><a href="#section-segment-api-v-objects">Segment API v4 objects</a></li>
-      <li><a href="#section-helpers">Helpers</a></li>
-      <li><a href="#section-shiny-modules">Shiny modules</a></li>
-      <li><a href="#section-advanced-fetching-options">Advanced fetching options</a></li>
-      <li><a href="#section-model-functions">Model functions</a></li>
-      <li><a href="#section-account-structure">Account structure</a></li>
-      <li><a href="#section-adwords-and-remarketing-segments">AdWords and remarketing segments</a></li>
-      <li><a href="#section-custom-datasource-uploads">Custom Datasource uploads</a></li>
-      <li><a href="#section-setting-up-view-filters">Setting up View filters</a></li>
-      <li><a href="#section-setting-up-goals">Setting up Goals</a></li>
-      <li><a href="#section-unsampled-reports-ga-">Unsampled Reports [GA360]</a></li>
-      <li><a href="#section-user-management">User management</a></li>
-      <li><a href="#section-visitorid-management">VisitorID management</a></li>
-      <li><a href="#section-custom-variables">Custom variables</a></li>
-      <li><a href="#section-experiments">Experiments</a></li>
-    </ul>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -942,13 +1181,16 @@ authentication is not supported.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

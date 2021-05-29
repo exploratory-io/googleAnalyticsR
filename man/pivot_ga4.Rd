@@ -4,8 +4,13 @@
 \alias{pivot_ga4}
 \title{Make a pivot object}
 \usage{
-pivot_ga4(pivot_dim, metrics, dim_filter_clause = NULL, startGroup = 0,
-  maxGroupCount = 5)
+pivot_ga4(
+  pivot_dim,
+  metrics,
+  dim_filter_clause = NULL,
+  startGroup = 0,
+  maxGroupCount = 5
+)
 }
 \arguments{
 \item{pivot_dim}{A character vector of dimensions}
@@ -19,7 +24,7 @@ pivot_ga4(pivot_dim, metrics, dim_filter_clause = NULL, startGroup = 0,
 \item{maxGroupCount}{Maximum number of groups to return.}
 }
 \value{
-pivot object of class \code{pivot_ga4} for use in \code{\link{filter_clause_ga4}}
+pivot object of class \code{pivot_ga4} for use in \code{\link[=filter_clause_ga4]{filter_clause_ga4()}}
 }
 \description{
 Make a pivot object

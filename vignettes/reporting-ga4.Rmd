@@ -1,0 +1,887 @@
+---
+title: "Data API for Google Analytics 4 (App+Web)"
+---
+
+The [Data API](https://developers.google.com/analytics/devguides/reporting/data/v1) and [Google Analytics Admin API](https://developers.google.com/analytics/devguides/config/admin/v1) are used with the Google Analytics 4 properties, the newest version of Google Analytics and evolution from Universal Analytics.  
+
+```{r include=FALSE}
+library(googleAnalyticsR)
+```
+
+
+## Google Analytics 4 - Data API Features
+
+* Only API to fetch data from Google Analytics 4 properties
+* No sampling
+* Fewer limits on exports, such as being able to fetch more than 1million rows
+* Ability to create your own custom metrics and dimensions
+* Send in up to 4 date ranges at once
+* Easier integration with the real-time API
+* Improved filter syntax
+
+## Demo video
+
+See a demo video on GA4 and some of the new `ga_data()` features in this [GA4 API FTW YouTube video](https://www.youtube.com/watch?v=5Itz6xfJGDk).
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/5Itz6xfJGDk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+## GA4 enabled properties
+
+You can see the GA4 accounts you have access to under your authentication via `ga_account_list("ga4")`
+
+```r
+library(googleAnalyticsR)
+ga_auth(email="my@email.com")
+ga_account_list("ga4")
+```
+
+## Meta data for GA4
+
+Universal metadata for what you can query via the Data API can be found by specifying that API in the `ga_meta()` function:
+
+```r
+metadata <- ga_meta(version = "data")
+```
+
+You may have custom dimensions and metrics set up for your web property - to get a list of those specify the web property in the meta data call:
+
+```r
+# Google Analytics 4 metadata for a particular Web Property
+ga_meta("data", propertyId = 206670707)
+```
+
+Custom events and user scoped custom dimensions have names starting with `customEvent:` and `customUser:` respectively.  Include them in your reports with the prefix.
+
+## Fetching GA4 Data into R
+
+Make sure to authenticate first using `ga_auth()` or otherwise.
+
+The primary data fetching function is `ga_data()`
+
+You need your `propertyId` to query data, and then at least a metric and date range:
+
+```r
+# replace with your propertyId
+my_property_id <- 206670707
+basic <- ga_data(
+  my_property_id,
+  metrics = c("activeUsers","sessions"),
+  date_range = c("2020-03-31", "2020-04-27")
+  )
+  
+basic
+# A tibble: 1 x 2
+#  activeUsers sessions
+#        <dbl>    <dbl>
+#1        1716     2783
+```
+
+Dimensions can be added to split out your results:
+
+```r
+# split out metrics by the dimensions specified
+dimensions <- ga_data(
+    my_property_id,
+    metrics = c("activeUsers","sessions"),
+    dimensions = c("date","city","dayOfWeek"),
+    date_range = c("2020-03-31", "2020-04-27")
+)
+
+dimensions
+# A tibble: 100 x 5
+#   date       city      dayOfWeek activeUsers sessions
+#   <date>     <chr>     <chr>           <dbl>    <dbl>
+# 1 2020-04-08 (not set) 4                  18       21
+# 2 2020-04-08 Rome      4                  12       14
+# 3 2020-04-15 (not set) 4                   9       11
+# 4 2020-04-27 (not set) 2                   9       11
+# 5 2020-04-09 (not set) 5                   8       10
+# 6 2020-04-14 (not set) 3                   8        8
+# 7 2020-04-22 (not set) 4                   8        9
+# 8 2020-03-31 (not set) 3                   7       10
+# 9 2020-04-08 Bologna   4                   7        7
+#10 2020-04-07 (not set) 3                   6        7
+# … with 90 more rows
+```
+
+### Event counts and names
+
+Some of the most useful dimensions and metrics to fetch are `eventName` and `eventCount`, which is effectively the most granular report given the new GA4 data model.  Combined with filters (see below) this can get you to useful conversion events.
+
+```r
+# if you set metrics=NULL you will get only the distinct events
+ga_data(
+    my_property_id, 
+    metrics = NULL,
+    dimensions = "eventName",
+    date_range = c("2020-03-31", "2020-04-27")
+)
+## A tibble: 9 x 1
+#  eventName      
+#  <chr>          
+#1 click          
+#2 first_visit    
+#3 page_view      
+#4 scroll         
+#5 session_start  
+#6 user_engagement
+#7 video_complete 
+#8 video_progress 
+#9 video_start 
+
+# eventsCounts per eventName 
+events <- ga_data(
+    my_property_id,
+    metrics = c("eventCount"),
+    dimensions = c("date","eventName"),
+    date_range = c("2020-03-31", "2020-04-27")
+)
+events
+## A tibble: 100 x 3
+#   date       eventName       eventCount
+#   <date>     <chr>                <dbl>
+# 1 2020-04-08 page_view              239
+# 2 2020-04-08 session_start          207
+# 3 2020-04-09 page_view              203
+# ...
+
+# filter to one event
+ga_data(
+    my_property_id, 
+    metrics = "eventCount",
+    dimensions = "eventName",
+    date_range = c("2020-03-31", "2020-04-27"),
+    dim_filters = ga_data_filter(eventName=="video_start")
+)
+## A tibble: 1 x 2
+#  eventName   eventCount
+#  <chr>            <dbl>
+#1 video_start          4
+```
+
+### Row limits
+
+By default the API returns 100 results.  Add the `limit` parameter to change the number of results returned.  To get all results, use -1
+
+```r
+only_5 <- ga_data(
+    my_property_id,
+    metrics = c("activeUsers","sessions"),
+    dimensions = c("date","city","dayOfWeek"),
+    date_range = c("2020-03-31", "2020-04-27"),
+    limit = 5
+)
+
+only_5
+# A tibble: 5 x 5
+#  date       city      dayOfWeek activeUsers sessions
+#  <date>     <chr>     <chr>           <dbl>    <dbl>
+#1 2020-04-08 (not set) 4                  18       21
+#2 2020-04-08 Rome      4                  12       14
+#3 2020-04-15 (not set) 4                   9       11
+#4 2020-04-27 (not set) 2                   9       11
+#5 2020-04-09 (not set) 5                   8       10
+
+all_results <- ga_data(
+    my_property_id,
+    metrics = c("activeUsers","sessions"),
+    dimensions = c("date","city","dayOfWeek"),
+    date_range = c("2020-03-31", "2020-04-27"),
+    limit = -1
+)
+
+all_results
+# A tibble: 1,763 x 5
+#   date       city      dayOfWeek activeUsers sessions
+#   <date>     <chr>     <chr>           <dbl>    <dbl>
+# 1 2020-04-08 (not set) 4                  18       21
+# 2 2020-04-08 Rome      4                  12       14
+# 3 2020-04-15 (not set) 4                   9       11
+# 4 2020-04-27 (not set) 2                   9       11
+# 5 2020-04-09 (not set) 5                   8       10
+# 6 2020-04-14 (not set) 3                   8        8
+# 7 2020-04-22 (not set) 4                   8        9
+# 8 2020-03-31 (not set) 3                   7       10
+# 9 2020-04-08 Bologna   4                   7        7
+#10 2020-04-07 (not set) 3                   6        7
+# … with 1,753 more rows
+```
+
+You can also select how big the API will page.  The default is the maximum 100000 rows - you may want to change this if you experience problems downloading a lot of data with several columns.  Set via the `page_size` parameter:
+
+```r
+# get all results, but page every 500 rows
+all_results_paged <- ga_data(
+  my_property_id,
+  metrics = c("activeUsers","sessions"),
+  dimensions = c("date","city","dayOfWeek"),
+  date_range = c("2020-03-31", "2020-04-27"),
+  limit = -1,
+  page_size = 500L
+)
+#ℹ 2021-02-20 12:26:11 > Downloaded [ 500 ] of total [ 1763 ] rows
+#ℹ 2021-02-20 12:26:11 > Paging API from offset [ 500 ]
+#ℹ 2021-02-20 12:26:12 > Downloaded [ 500 ] of total [ 1763 ] rows
+#ℹ 2021-02-20 12:26:12 > Paging API from offset [ 1000 ]
+#ℹ 2021-02-20 12:26:13 > Downloaded [ 500 ] of total [ 1763 ] rows
+#ℹ 2021-02-20 12:26:13 > Paging API from offset [ 1500 ]
+#ℹ 2021-02-20 12:26:14 > Downloaded [ 263 ] of total [ 1763 ] rows
+
+# get 510 rows, page every 500 rows (so 2 total)
+top510_paged500 <- ga_data(
+  my_property_id,
+  metrics = c("activeUsers","sessions"),
+  dimensions = c("date","city","dayOfWeek"),
+  date_range = c("2020-03-31", "2020-04-27"),
+  limit = 510,
+  page_size = 500L
+)
+#ℹ 2021-02-20 12:26:45 > Downloaded [ 500 ] of total [ 1763 ] rows
+#ℹ 2021-02-20 12:26:45 > Paging API from offset [ 500 ]
+#ℹ 2021-02-20 12:26:46 > Downloaded [ 10 ] of total [ 1763 ] rows
+```
+
+### Custom definitions
+
+When fetching custom dimensions and metrics, specify the prefix as you read it in the meta data table.  See this [Google article on custom definitions](https://developers.google.com/analytics/devguides/reporting/data/v1/advanced#listing_custom_definitions_and_creating_reports) for details.
+
+```r
+# will include your custom data
+my_meta <- ga_meta("data", propertyId = 206670707)
+
+custom <- ga_data(
+    my_property_id,
+    metrics = c("customEvent:credits_spent"),
+    dimensions = c("date","customUser:last_level","customEvent:achievement_id"),
+    date_range = c("2020-03-31", "2020-04-27"),
+    limit = -1
+)
+```
+
+#### Calculated fields
+
+You can also create custom metrics and dimensions on the fly with calculated metrics.  These let you send in combinations of metrics or dimensions:
+
+```r
+# metric and dimension expressions
+ 
+# create your own named metrics
+ga_data(
+   my_property_id,
+   metrics = c("activeUsers","sessions",sessionsPerUser = "sessions/activeUsers"),
+   dimensions = c("date","city","dayOfWeek"),
+   date_range = c("2020-03-31", "2020-04-27"),
+   limit = 100
+   )
+## A tibble: 100 x 6
+#   date       city        dayOfWeek activeUsers sessions sessionsPerUser
+#   <date>     <chr>       <chr>           <dbl>    <dbl>           <dbl>
+# 1 2020-04-03 Kaliningrad 6                   3        3            1   
+# 2 2020-04-19 Munich      1                   3        4            1.33
+# 3 2020-04-27 Hamburg     2                   3        3            1   
+# 4 2020-04-16 London      5                   5        6            1.2 
+#...
+
+# create your own aggregation dimensions
+ga_data(
+   my_property_id,
+   metrics = c("activeUsers","sessions"),
+   dimensions = c("date","city","dayOfWeek", cdow = "city/dayOfWeek"),
+   date_range = c("2020-03-31", "2020-04-27"),
+   limit = 100
+   )
+## A tibble: 100 x 6
+#   date       city      dayOfWeek cdow        activeUsers sessions
+#   <date>     <chr>     <chr>     <chr>             <dbl>    <dbl>
+# 1 2020-04-18 (not set) 7         (not set)/7           5        6
+# 2 2020-04-14 Madrid    3         Madrid/3              5        6
+# 3 2020-04-17 London    6         London/6              5        6
+
+# useful for creating referral data
+ga_data(
+    my_property_id,
+    metrics = c("activeUsers","sessions"),
+    dimensions = c("date", sessionMediumSource = "sessionMedium/sessionSource"),
+    date_range = c("2020-03-31", "2020-04-27"),
+    limit = 100
+)
+## A tibble: 100 x 4
+#   date       sessionMediumSource     activeUsers sessions
+#   <date>     <chr>                         <dbl>    <dbl>
+# 1 2020-04-27 organic/google                   80       93
+# 2 2020-04-15 organic/google                   79      101
+# 3 2020-04-07 organic/google                   72       87
+```
+
+## Date Ranges
+
+You can send in up to 4 date ranges, via a vector of dates:
+
+```r
+date_range4 <- ga_data(
+    my_property_id,
+    metrics = c("activeUsers","sessions"),
+    dimensions = c("date","city","dayOfWeek"),
+    date_range = c("2020-03-31", "2020-04-06", 
+                   "2020-04-07", "2020-04-14", 
+                   "2020-04-15", "2020-04-22", 
+                   "2020-04-23", "2020-04-30"),
+    limit = -1
+)
+```
+
+The date is output with a `dateRange` column indicating which date ranges the data belongs to:
+
+```r
+date_range4
+# A tibble: 7,948 x 6
+#   date       city            dayOfWeek dateRange    activeUsers sessions
+#   <date>     <chr>           <chr>     <chr>              <dbl>    <dbl>
+# 1 2020-04-06 Laval           2         date_range_0           1        1
+# 2 2020-04-29 Ghent           4         date_range_3           1        1
+# 3 2020-03-31 Wokingham       3         date_range_0           1        1
+# 4 2020-04-01 Zielona Gora    4         date_range_0           1        1
+# 5 2020-04-16 Charlottesville 5         date_range_2           1        1
+# 6 2020-04-25 Fulshear        7         date_range_3           1        1
+# … with 7,938 more rows
+```
+
+You can send in dates as strings in YYYY-MM-DD format; as R Dates (e.g. `Sys.Date()`) or via the API keywords "today", "yesterday", or "NdaysAgo")
+
+
+```r
+# use R to make useful date vectors
+dates <- rev(seq(Sys.Date(), by = -7, length.out = 8))
+dates
+#[1] "2020-10-19" "2020-10-26" "2020-11-02" "2020-11-09" "2020-11-16" "2020-11-23" "2020-11-30" "2020-12-07"
+
+# r dates
+ga_data(
+    my_property_id,
+    metrics = c("activeUsers","sessions"),
+    dimensions = c("date","city","dayOfWeek"),
+    date_range = dates,
+    limit = -1
+)
+
+
+# text dates
+ga_data(
+    my_property_id,
+    metrics = c("activeUsers","sessions"),
+    dimensions = c("date","city","dayOfWeek"),
+    date_range = c("yesterday","today","3daysAgo","2daysAgo"),
+    limit = -1)
+```
+
+## Filters
+
+Filters are simpler to create but more flexible than in Universal Analytics. 
+
+There is now only one filter function - `ga_data_filter()`.  As was the case for `google_analytics()` , you use the filter function to construct metric filters or dimension filters in the `dim_filters` or `met_filters` parameters in your `ga_data()` call. 
+
+```r
+ga_data(
+   206670707,
+   metrics = c("activeUsers","sessions"),
+   dimensions = c("date","city","dayOfWeek"),
+   date_range = c("2020-03-31", "2020-04-27"),
+   dim_filters = ga_data_filter(city=="Copenhagen"),
+   limit = 100
+   )
+# A tibble: 17 x 5
+#   date       city       dayOfWeek activeUsers sessions
+#   <date>     <chr>      <chr>           <dbl>    <dbl>
+# 1 2020-04-16 Copenhagen 5                   3        4
+# 2 2020-04-10 Copenhagen 6                   2        2
+# 3 2020-04-15 Copenhagen 4                   2        2
+# 4 2020-04-17 Copenhagen 6                   2        2
+# ...
+```
+
+### Making filter elements
+
+The base object is `ga_data_filter()` - this holds the logic for the specific metric or dimension you are using.  The function uses a new DSL for GA4 filters, the syntax rules are detailed below: 
+
+* A single filter, or multiple filters within a filter expression can be passed in to `ga_data()`
+* The single filter syntax is (field) (operator) (value) e.g. `city=="Copenhagen"`
+* (field) is a dimension or metric for your web property, which you can review via `ga_meta("data")`
+* (field) can be quoted (`"city"`, `"session"`), or unquoted ( `city` or `session`) if you want to use validation.
+* (field) validation for unquoted fields is available if using default metadata (e.g. `city` or `session`), or you have fetched your custom fields via `ga_meta("data", propertyId=123456)`
+* (operator) can be one of `==, >, >=, <, <=` for metrics
+* (operator) can be one of `==, %begins%, %ends%, %contains%, %contains%, %regex%, %regex_partial%` for dimensions
+* dimension (operator) are by default case sensitive. Make them case insensitive by using UPPER case variations `%BEGINS%, %ENDS%` etc. or `%==%` for case insensitive exact matches
+* (value) can be strings (`"dim1"`), numerics (`55`), string vectors (`c("dim1", "dim2")`), numeric vectors (`c(1,2,3)`) or NULL (`NULL`) which will correspond to different types of filters
+* Filter expressions for multiple filters when using the operators: `&, |, !` which correspond to `AND`, `OR` and `NOT` respectively. 
+
+#### Filter Fields
+
+Fields are metrics and dimensions that are available to your GA4 implementation, including custom fields.  You can see what is available by calling the `ga_meta("data")` function.
+
+Do not construct metric filters and use in the `dim_filters` argument or vice-versa.
+
+You can use quoted (`"city"`, `"session"`) or unquoted fields ( `city` or `session`) which will check the field is valid before you send it to the API.  
+
+If you want to use custom fields from your property, do a call to `ga_meta("data", propertyId=1234546)` replacing your propertyId for the GA4 property that has the custom fields.  Once fetched, they will be placed in your local environment for all future calls to `ga_data_filter()` - use the custom events with a `cust_` prefix e.g.
+
+```r
+# gets fields including custom event field "customEvent:test_dim"
+my_meta <- ga_meta("data", propertyId = 206670707)
+
+# use the custom event in a filter
+ga_data_filter(cust_test_dim == "test")
+```
+
+#### Filter Values
+
+Values are checked in the filter object based on the R class of the object you are passing in as its value:
+
+* `character`: stringFilter - e.g. `"Copenhagen"`
+* `character vector`: inListFilter e.g. `c("Copenhagen","London","New York")`
+* `numeric`: NumericFilter e.g. `5`
+* `numeric 2-length vector`: BetweenFilter e.g. `c(5, 10)`
+* `NULL`: Will filter for NULL e.g. `city==NULL` - often used with `!` (not NULL)
+
+e.g. if you pass in a character of length one (`"Copenhagen"`) then it will assume to be a class `StringFilter` (all dimensions that match "Copenhagen") if you pass in a character of length greater than one `c("Copenhagen","London","New York")`, then it assume to be a class `InListFilter` (dimensions must match one in the list)
+
+### Examples Using GA4 Filters
+
+All filters are made up of filter expressions using `ga_data_filter()`:
+
+```r
+simple_filter <- ga_data(
+   206670707,
+   metrics = c("activeUsers","sessions"),
+   dimensions = c("date","city","dayOfWeek"),
+   date_range = c("2020-03-31", "2020-04-27"),
+   dim_filters = ga_data_filter(city=="Copenhagen"),
+   limit = 100
+   )
+
+simple_filter
+# A tibble: 17 x 5
+#   date       city       dayOfWeek activeUsers sessions
+#   <date>     <chr>      <chr>           <dbl>    <dbl>
+# 1 2020-04-16 Copenhagen 5                   3        4
+# 2 2020-04-10 Copenhagen 6                   2        2
+# 3 2020-04-15 Copenhagen 4                   2        2
+# 4 2020-04-17 Copenhagen 6                   2        2
+# ...
+```
+
+If you need more complicated filters, then build them using the DSL syntax.  This lets you combine `ga_data_filter()` objects in various ways.
+
+
+```{r}
+## filter clauses
+# OR string filter
+ga_data_filter(city=="Copenhagen" | city == "London")
+# inlist string filter - equivalent to above
+ga_data_filter(city==c("Copenhagen","London"))
+# AND string filters
+ga_data_filter(city=="Copenhagen" & dayOfWeek == "5")
+# NOT string filter
+ga_data_filter(!(city=="Copenhagen" | city == "London"))
+
+# multiple filter clauses
+ga_data_filter(city==c("Copenhagen","London","Paris","New York") &
+                 (dayOfWeek=="5" | dayOfWeek=="6"))
+```
+
+#### Filter field validation
+
+Validation is carried out if the field is unquoted.  If you don't want validation use quotes.  
+
+```{r}
+# validation of fields - correct
+ga_data_filter(city=="Copenhagen")
+
+# validation of fields - error
+tryCatch(ga_data_filter(cittty=="Copenhagen"), 
+         error = function(err) err$message)
+
+# avoid validation by quoting
+ga_data_filter("cittty"=="Copenhagen")
+```
+
+For custom fields use `ga_meta("data", propertyId=12345)` first to fetch them.
+
+```r
+# gets fields including custom event field "customEvent:test_dim"
+my_meta <- ga_meta("data", propertyId = 206670707)
+
+# use the custom event in a filter
+ga_data_filter(cust_test_dim == "test")
+```
+
+#### Numeric filters for use in `met_filters`
+
+An example of metric filters are below:
+
+```r
+metric_filter <- ga_data(
+   206670707,
+   metrics = c("activeUsers","sessions"),
+   dimensions = c("date","city","dayOfWeek"),
+   date_range = c("2020-03-31", "2020-04-27"),
+   met_filters = ga_data_filter(sessions>10),
+   limit = 100
+   )
+
+metric_filter
+# A tibble: 7 x 5
+#  date       city      dayOfWeek activeUsers sessions
+#  <date>     <chr>     <chr>           <dbl>    <dbl>
+#1 2020-04-08 (not set) 4                  18       21
+#2 2020-04-08 Rome      4                  12       14
+#3 2020-04-15 (not set) 4                   9       11
+#4 2020-04-27 (not set) 2                   9       11
+# ...
+```
+
+```{r}
+## numeric filter types
+# numeric equal filter
+ga_data_filter(sessions==5)
+# between numeric filter
+ga_data_filter(sessions==c(5,6))
+# greater than numeric
+ga_data_filter(sessions > 0)
+# greater than or equal
+ga_data_filter(sessions >= 1)
+# less than numeric
+ga_data_filter(sessions < 100)
+# less than or equal numeric
+ga_data_filter(sessions <= 100)
+```
+
+#### Dimension filters for use in `dim_filters`
+
+All the string filters that can be used are below:
+
+```{r}
+## string filter types
+# begins with string
+ga_data_filter(city %begins% "Cope")
+# ends with string
+ga_data_filter(city %ends% "hagen")
+# contains string
+ga_data_filter(city %contains% "ope")
+# regex (full) string
+ga_data_filter(city %regex% "^Cope")
+# regex (partial) string
+ga_data_filter(city %regex_partial% "ope")
+```
+
+By default string filters are case sensitive.  Use UPPERCASE operator to make then case insensitive
+
+```{r}
+# begins with string (case insensitive)
+ga_data_filter(city %BEGINS% "cope")
+# ends with string (case insensitive)
+ga_data_filter(city %ENDS% "Hagen")
+# case insensitive exact match
+ga_data_filter(city %==% "copeNHAGen")
+```
+
+#### Complex filters
+
+You can also recursively nest filter expressions to make more complicated ones.  
+
+The filter below looks for visitors from Copenhagen, London, Paris or New York who arrived on day 5 or 6 of the week, or from Google referrers but not including Google Ads.
+
+```{r}
+# use previously created filters to build another filter expression:
+# multiple filter clauses
+f1 <- ga_data_filter(city==c("Copenhagen","London","Paris","New York") &
+                       (dayOfWeek=="5" | dayOfWeek=="6")) 
+
+# build up complicated filters
+f2 <- ga_data_filter(f1 | sessionSource=="google" & !city=="(not set)")
+f3 <- ga_data_filter(f2 & !sessionMedium=="cpc")
+f3
+```
+
+You can use filter expression objects above directly like so:
+
+```r
+complex_filter <- ga_data(
+   206670707,
+   metrics = c("activeUsers","sessions"),
+   dimensions = c("date","city","dayOfWeek"),
+   date_range = c("2020-03-31", "2020-04-27"),
+   dim_filters = f3,
+   limit = 100
+   )
+   
+complex_filter
+## A tibble: 100 x 5
+#   date       city      dayOfWeek activeUsers sessions
+#   <date>     <chr>     <chr>           <dbl>    <dbl>
+# 1 2020-04-27 Melbourne 2                   3        4
+# 2 2020-04-10 Eindhoven 6                   2        3
+# 3 2020-04-07 Bristol   3                   2        2
+# 4 2020-04-01 Reston    4                   2        2
+# ...
+```
+
+## Ordering
+
+You can order or sort results using a new DSL via the function `ga_data_order()` that operate on the fields (dimensions/metrics) in your returned data.
+
+The DSL will validate the fields you are sending in are valid.  You then prefix the field with a `+` for ascending order or `-` for descending order like so:
+
+```{r}
+# session in descending order
+ga_data_order(-sessions)
+
+# city dimension in ascending alphanumeric order
+ga_data_order(+city)
+```
+
+You can have multiple orders - add the -/+{field} after the former without commas:
+
+```{r}
+# as above plus sessions in descending order
+ga_data_order(+city -sessions)
+
+# as above plus activeUsers in ascending order
+ga_data_order(+city -sessions +activeUsers)
+```
+
+For dimensions, you have a choice on what type of sort is available:
+
+* `ALPHANUMERIC` - For example, "2" < "A" < "X" < "b" < "z"
+* `CASE_INSENSITIVE_ALPHANUMERIC` - Case insensitive alphanumeric sort by lower case Unicode code point. For example, "2" < "A" < "b" < "X" < "z"
+* `NUMERIC` - Dimension values are converted to numbers before sorting. For example in NUMERIC sort, "25" < "100", and in ALPHANUMERIC sort, "100" < "25". Non-numeric dimension values all have equal ordering value below all numeric values
+
+Use `ga_data_order()` objects in the `orderBys` argument:
+
+```r
+ga_data(
+  206670707,
+  metrics = c("activeUsers","sessions"),
+  dimensions = c("date","city","dayOfWeek"),
+  date_range = c("2020-03-31", "2020-04-27"),
+  orderBys = ga_data_order(-sessions -dayOfWeek)
+  )
+## A tibble: 100 x 5
+#   date       city           dayOfWeek activeUsers sessions
+#   <date>     <chr>          <chr>           <dbl>    <dbl>
+# 1 2020-04-08 (not set)      4                  18       21
+# 2 2020-04-08 Rome           4                  12       14
+# 3 2020-04-20 London         2                   6       14
+# 4 2020-04-09 Warsaw         5                   5       11
+# 5 2020-04-15 (not set)      4                   9       11
+# 6 2020-04-21 Amsterdam      3                   3       11
+# 7 2020-04-27 (not set)      2                   9       11
+# ...
+```
+
+You can also combine `ga_data_order()` objects with `c()`
+
+```r
+a <- ga_data_order(-sessions)
+b <- ga_data_order(-dayOfWeek, type = "NUMERIC")
+
+ga_data(
+    206670707,
+    metrics = c("activeUsers","sessions"),
+    dimensions = c("date","city","dayOfWeek"),
+    date_range = c("2020-03-31", "2020-04-27"),
+    orderBys = c(a, b),
+    limit = 100
+)
+## A tibble: 100 x 5
+#   date       city           dayOfWeek activeUsers sessions
+#   <date>     <chr>          <chr>           <dbl>    <dbl>
+# 1 2020-04-08 (not set)      4                  18       21
+# 2 2020-04-08 Rome           4                  12       14
+# 3 2020-04-20 London         2                   6       14
+# 4 2020-04-09 Warsaw         5                   5       11
+# 5 2020-04-15 (not set)      4                   9       11
+# 6 2020-04-21 Amsterdam      3                   3       11
+# 7 2020-04-27 (not set)      2                   9       11
+# ...
+```
+
+#### Order Fields
+
+Fields are metrics and dimensions that are available to your GA4 implementation, including custom fields.  You can see what is available by calling the `ga_meta("data")` function.
+
+You can use quoted (`"city"`, `"session"`) or unquoted fields ( `city` or `session`) which will check the field is valid before you send it to the API.  
+
+If you want to use custom fields from your property, do a call to `ga_meta("data", propertyId=1234546)` similar to the filter fields explained above, and prefix the custom field with `cust_`
+
+
+## Real Time Data
+
+Real-time data can be fetched with the same function as the regular Data API, but it is calling another endpoint.  Add the `realtime=TRUE` argument to the function.
+
+A limited subset of [dimensions and metrics are available in the real-time API](https://developers.google.com/analytics/devguides/reporting/data/v1/realtime-api-schema).  Date ranges are ignored.
+
+```r
+# run a real-time report 
+realtime <- ga_data(
+  206670707,
+  metrics = "activeUsers",
+  dimensions = "city",
+  dim_filters = ga_data_filter(city=="Copenhagen"),
+  limit = 100,
+  realtime = TRUE)
+```
+
+## Metric Aggregations
+
+Each API call includes the TOTAL, MAXIMUM and MINIMUM metric aggregations in the returned data.frame's metadata.  You can access this data using base R's `attr()` function or use `ga_data_aggregations()` to extract the data.frames:
+
+```r
+aggs <- ga_data(
+      206670707, 
+      date_range = c(Sys.Date() - 4, Sys.Date() - 1),
+      metrics = "activeUsers",
+      dimensions = c("city","unifiedScreenName"),
+      limit = 100)
+      
+all_aggs <- ga_data_aggregations(aggs, type = "all")
+all_aggs
+#$totals
+## A tibble: 1 x 4
+#  city           unifiedScreenName dateRange    activeUsers
+#  <chr>          <chr>             <chr>              <dbl>
+#1 RESERVED_TOTAL RESERVED_TOTAL    date_range_0         250
+#
+#$maximums
+## A tibble: 1 x 4
+#  city         unifiedScreenName dateRange    activeUsers
+#  <chr>        <chr>             <chr>              <dbl>
+#1 RESERVED_MAX RESERVED_MAX      date_range_0           4
+#
+#$minimums
+## A tibble: 1 x 4
+#  city         unifiedScreenName dateRange    activeUsers
+#  <chr>        <chr>             <chr>              <dbl>
+#1 RESERVED_MIN RESERVED_MIN      date_range_0           0
+
+# now in a list
+all_aggs$totals
+## A tibble: 1 x 4
+#  city           unifiedScreenName dateRange    activeUsers
+#  <chr>          <chr>             <chr>              <dbl>
+#1 RESERVED_TOTAL RESERVED_TOTAL    date_range_0         250
+
+# extract individual aggregations individually
+maxes <- ga_data_aggregations(aggs, type = "maximums")
+maxes
+## A tibble: 1 x 4
+#  city         unifiedScreenName dateRange    activeUsers
+#  <chr>        <chr>             <chr>              <dbl>
+#1 RESERVED_MAX RESERVED_MAX      date_range_0           4
+```
+
+If you request more than one date range, the aggregations will be calculated for each one:
+
+```r
+# use R to generate some dates
+dates <- rev(seq(Sys.Date(), by = -7, length.out = 8))
+dates
+#[1] "2020-10-19" "2020-10-26" "2020-11-02" "2020-11-09" "2020-11-16" "2020-11-23" "2020-11-30" "2020-12-07"
+
+aggs <- ga_data(
+    206670707, 
+    date_range = dates,
+    metrics = "activeUsers",
+    dimensions = c("city","unifiedScreenName"),
+    limit = 100)
+    
+# get the totals
+ga_data_aggregations(aggs, type = "totals")
+## A tibble: 4 x 4
+#  city           unifiedScreenName dateRange    activeUsers
+#  <chr>          <chr>             <chr>              <dbl>
+#1 RESERVED_TOTAL RESERVED_TOTAL    date_range_0         200
+#2 RESERVED_TOTAL RESERVED_TOTAL    date_range_1           4
+#3 RESERVED_TOTAL RESERVED_TOTAL    date_range_2           2
+#4 RESERVED_TOTAL RESERVED_TOTAL    date_range_3         399
+```
+
+## Quotas
+
+There is no sampling but there are token quotas for API fetches on a per-project basis.  Normally these are not visible until you are close to the quota limits, but you can see them if you set the googleAuthR verbose level below 3 (`options(googleAuthR.verbose=2)`)) or if the API call costs more than 50 units.
+
+The bigger and more complex the query you make, the more tokens you use.
+
+See this [Google guide on how API quotas are assigned](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas).  The quotas are on a per GCP project and Ga4 web property level, and you get more if on GA360.
+
+An example taken from above:
+
+```r
+options(googleAuthR.verbose=2)
+complex_filter <- ga_data(
+     206670707,
+     metrics = c("activeUsers","sessions"),
+     dimensions = c("date","city","dayOfWeek"),
+     date_range = c("2020-03-31", "2020-04-06", 
+                    "2020-04-07", "2020-04-14", 
+                    "2020-04-15", "2020-04-22", 
+                    "2020-04-23", "2020-04-30"),
+     metricAggregations = c("TOTAL","MINIMUM","MAXIMUM"),
+     orderBys = ga_data_order(-sessions +city),
+     dim_filters = ga_data_filter(
+              city==c("Copenhagen","London","Paris","New York") &
+              (dayOfWeek=="5" | dayOfWeek=="6")),
+     limit = -1
+)
+#>ℹ 2020-11-24 16:12:36 > tokensPerDay: Query Cost [ 15 ] / Remaining [ 24847 ]
+#>ℹ 2020-11-24 16:12:36 > tokensPerHour: Query Cost [ 15 ] / Remaining [ 4967 ]
+#>ℹ 2020-11-24 16:12:36 > concurrentRequests:  10  / 10
+#>ℹ 2020-11-24 16:12:36 > serverErrorsPerProjectPerHour:  10  / 10
+```
+
+The quotas are:
+
+* `tokensPerDay` - how many tokens in 24hrs
+* `tokensPerHour` - how many tokens in 1 hr
+* `concurrentRequests` - how many API requests at once
+* `serverErrorsPerProjectPerHour` - how many bad API calls you can make per project/hr
+
+## Debugging and Raw JSON requests
+
+If you ever need to inspect the API request, set `options(googleAuthR.verbose=2)` to see the request JSON.  This is helpful in bug reports.
+
+If you use the `raw_json` argument only in `ga_data()` to send in a string of the JSON as specified by the [`runReport` object](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1alpha/TopLevel/runReport), this can be used to fetch unimplemented API features or buggy requests to help debugging.
+
+```r
+ga_data(206670707, raw_json = '{"metrics":[{"name":"sessions"}],"orderBys":[{"dimension":{"orderType":"ALPHANUMERIC","dimensionName":"date"},"desc":false}],"dimensions":[{"name":"date"}],"dateRanges":[{"startDate":"2021-01-01","endDate":"2021-01-07"}],"keepEmptyRows":true,"limit":100,"returnPropertyQuota":true}')
+# ℹ 2021-04-13 10:50:17 > Making API request with raw JSON:  {"metrics":[{"name":"sessions"}],"orderBys":[{"dimension":{"orderType":"ALPHANUMERIC","dimensionName":"date"},"desc":false}],"dimensions":[{"name":"date"}],"dateRanges":[{"startDate":"2021-01-01","endDate":"2021-01-07"}],"keepEmptyRows":true,"limit":100,"returnPropertyQuota":true}
+# ℹ 2021-04-13 10:50:17 > Request:  https://analyticsdata.googleapis.com/v1beta/properties/206670707:runReport/
+# ℹ 2021-04-13 10:50:17 > Body JSON parsed to:  "{\"metrics\":[{\"name\":\"sessions\"}],\"orderBys\":[{\"dimension\":{\"orderType\":\"ALPHANUMERIC\",\"dimensionName\":\"date\"},\"desc\":false}],\"dimensions\":[{\"name\":\"date\"}],\"dateRanges\":[{\"startDate\":\"2021-01-01\",\"endDate\":\"2021-01-07\"}],\"keepEmptyRows\":true,\"limit\":100,\"returnPropertyQuota\":true}"
+#ℹ 2021-04-13 10:50:18 > tokensPerDay: Query Cost [ 1 ] / Remaining [ 24927 ]
+#ℹ 2021-04-13 10:50:18 > tokensPerHour: Query Cost [ 1 ] / Remaining [ 4927 ]
+#ℹ 2021-04-13 10:50:18 > concurrentRequests:  10  / 10
+#ℹ 2021-04-13 10:50:18 > serverErrorsPerProjectPerHour:  10  / 10
+#ℹ 2021-04-13 10:50:18 > Downloaded [ 7 ] of total [ 7 ] rows
+## A tibble: 7 x 2
+#  date       sessions
+#  <date>        <dbl>
+#1 2021-01-01       33
+#2 2021-01-02       34
+#3 2021-01-03       66
+#4 2021-01-04       89
+# ...
+```
+
+You can also query the realtime API:
+
+```r
+ga_data(
+    propertyId = ga4_propertyId, 
+    raw_json = '{"metrics":[{"name":"activeUsers"}],"limit":100,"returnPropertyQuota":true}',
+    realtime = TRUE)
+## A tibble: 1 x 1
+#  activeUsers
+#        <dbl>
+#1           2
+```
+
+If you pass in an R list instead of raw JSON string that will be converted into JSON via `jsonlite::fromJSON()`

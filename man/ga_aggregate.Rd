@@ -4,8 +4,11 @@
 \alias{ga_aggregate}
 \title{Aggregate a Google Analytics dataframe over inputted columns}
 \usage{
-ga_aggregate(ga_data, agg_names = NULL,
-  mean_regex = "^avg|^percent|Rate$|^CPC$|^CTR$|^CPM$|^RPC$|^ROI$|^ROAS$|Per")
+ga_aggregate(
+  ga_data,
+  agg_names = NULL,
+  mean_regex = "^avg|^percent|Rate$|^CPC$|^CTR$|^CPM$|^RPC$|^ROI$|^ROAS$|Per"
+)
 }
 \arguments{
 \item{ga_data}{A dataframe of data to aggregate}
@@ -19,8 +22,8 @@ A helper function to aggregate over dimensions
 }
 \details{
 Will auto select metrics if they are numeric class columns.
-  Will auto perform mean aggregation it metric names match \code{mean_regex} argument
-  If agg_names is NULL will aggregate over all
+Will auto perform mean aggregation it metric names match \code{mean_regex} argument
+If agg_names is NULL will aggregate over all
 }
 \examples{
 

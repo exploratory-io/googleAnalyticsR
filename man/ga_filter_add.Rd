@@ -4,8 +4,13 @@
 \alias{ga_filter_add}
 \title{Create a new filter and add it to the view (optional).}
 \usage{
-ga_filter_add(Filter, accountId, webPropertyId = NULL, viewId = NULL,
-  linkFilter = FALSE)
+ga_filter_add(
+  Filter,
+  accountId,
+  webPropertyId = NULL,
+  viewId = NULL,
+  linkFilter = FALSE
+)
 }
 \arguments{
 \item{Filter}{The Filter object to be added to the account or view.  See examples.}
@@ -25,7 +30,7 @@ The filterId created if \code{linkFilter=FALSE} or a Filter object if \code{link
 Take a filter object and add and/or apply it so its live.
 }
 \details{
-If you don't set \code{linkFilter=TRUE} then the filter will only be created but not applied.  
+If you don't set \code{linkFilter=TRUE} then the filter will only be created but not applied.
 You will find it listed in the admin panel Account > All Filters.  You can then use \link{ga_filter_apply_to_view} to apply later on.
 }
 \examples{
@@ -101,11 +106,12 @@ Filter <- list(
 \seealso{
 \url{https://developers.google.com/analytics/devguides/config/mgmt/v3/mgmtReference/#Filters}
 
-Other managementAPI functions: \code{\link{ga_experiment_list}},
-  \code{\link{ga_experiment}},
-  \code{\link{ga_filter_apply_to_view}},
-  \code{\link{ga_filter_update_filter_link}},
-  \code{\link{ga_filter_update}},
-  \code{\link{ga_segment_list}}
+Other managementAPI functions: 
+\code{\link{ga_experiment_list}()},
+\code{\link{ga_experiment}()},
+\code{\link{ga_filter_apply_to_view}()},
+\code{\link{ga_filter_update_filter_link}()},
+\code{\link{ga_filter_update}()},
+\code{\link{ga_segment_list}()}
 }
 \concept{managementAPI functions}

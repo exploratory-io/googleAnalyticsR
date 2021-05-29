@@ -4,10 +4,21 @@
 \alias{google_analytics_bq}
 \title{Get Google Analytics 360 BigQuery data}
 \usage{
-google_analytics_bq(projectId, datasetId, start = NULL, end = NULL,
-  metrics = NULL, dimensions = NULL, sort = NULL, filters = NULL,
-  max_results = 100, query = NULL, return_query_only = FALSE,
-  bucket = NULL, download_file = NULL)
+google_analytics_bq(
+  projectId,
+  datasetId,
+  start = NULL,
+  end = NULL,
+  metrics = NULL,
+  dimensions = NULL,
+  sort = NULL,
+  filters = NULL,
+  max_results = 100,
+  query = NULL,
+  return_query_only = FALSE,
+  bucket = NULL,
+  download_file = NULL
+)
 }
 \arguments{
 \item{projectId}{The Google project Id where the BigQuery exports sit}
@@ -40,15 +51,15 @@ google_analytics_bq(projectId, datasetId, start = NULL, end = NULL,
 data.frame of results
 }
 \description{
-Turn a google_analytics style call into BigQuery SQL. 
+Turn a google_analytics style call into BigQuery SQL.
 Used with Google Analytics 360 BigQuery exports.
 }
 \details{
 All data will be unsampled, and requests will cost money against your BigQuery quota.
 
-Requires installation of bigQueryR and authentication under ga_bq_auth() 
+Requires installation of bigQueryR and authentication under ga_bq_auth()
 or googleAuthR::gar_auth() with BigQuery scope set.
-View your projectIds upon authentication via \code{\link[bigQueryR]{bqr_list_projects}}
+View your projectIds upon authentication via \code{\link[bigQueryR:bqr_list_projects]{bigQueryR::bqr_list_projects()}}
 
 No segments for now.
 
@@ -58,9 +69,9 @@ e.g. unique pageviews or unique events.
 Custom dimensions can be specified as session or hit level, so ignoring the setting in GA interface.
 
 You can get a sample Google Analytics dataset in bigquery by following the instructions
-  here: \url{https://support.google.com/analytics/answer/3416091?hl=en}
+here: \url{https://support.google.com/analytics/answer/3416091?hl=en}
 }
 \seealso{
 \url{https://support.google.com/analytics/answer/4419694?hl=en}
-         \url{https://support.google.com/analytics/answer/3437719?hl=en}
+\url{https://support.google.com/analytics/answer/3437719?hl=en}
 }

@@ -203,50 +203,37 @@ ga_filter_delete <- function(accountId,
                              removeFromView = FALSE) {
   
   url <- "https://www.googleapis.com/analytics/v3/management/"
+
   if(removeFromView){
-    
     assert_that(
       !is.null(webPropertyId),
       !is.null(viewId)
     )
     
-    f <- gar_api_generator(url,
-                           "DELETE",
-                           path_args = list(
-                             accounts = accountId,
-                             webproperties = webPropertyId,
-                             profiles = viewId,
-                             profileFilterLinks = paste(viewId,filterId, sep=":")
-                           ),
-                           data_parse_function = function(x) x)
-    out <- tryCatch(f(), 
-                    warning = function(ex){
-                      if(grepl("No JSON content detected",ex)){
-                        return(TRUE)
-                      } else {
-                        return(ex)
-                      }
-                    }) 
+    path_args = list(
+      accounts = accountId,
+      webproperties = webPropertyId,
+      profiles = viewId,
+      profileFilterLinks = paste(viewId,filterId, sep=":")
+    )
+    
   } else {
     
-    f <- gar_api_generator(url,
-                           "DELETE",
-                           path_args = list(
-                             accounts = accountId,
-                             filters = filterId
-                           ),
-                           data_parse_function = function(x) x)
-    out <- tryCatch(f(), 
-                    warning = function(ex){
-                      if(grepl("No JSON content detected",ex)){
-                        return(TRUE)
-                      } else {
-                        return(ex)
-                      }
-                    }) 
+    path_args = list(
+      accounts = accountId,
+      filters = filterId
+    )
+    
   }
   
-  out
+  f <- gar_api_generator(url,
+                         "DELETE",
+                         path_args = path_args,
+                         data_parse_function = function(x) {myMessage("Deleted filter: ", filterId, level = 3)})
+  
+  f()
+  
+  TRUE
 }
 
 
@@ -260,14 +247,14 @@ ga_filter_delete <- function(accountId,
 #' @param viewId View Id of the view to add the Filter to
 #' @param linkFilter If TRUE will apply the Filter to the view. Needs propetyId and viewId to be set.
 #' 
-#' @return The filterId created if \code{linkFilter=FALSE} or a Filter object if \code{linkFilter=TRUE}
+#' @return The filterId created if `linkFilter=FALSE` or a Filter object if `linkFilter=TRUE`
 #' 
-#' @seealso \url{https://developers.google.com/analytics/devguides/config/mgmt/v3/mgmtReference/#Filters}
+#' @seealso <https://developers.google.com/analytics/devguides/config/mgmt/v3/mgmtReference/#Filters>
 #' 
 #' @details 
 #' 
-#' If you don't set \code{linkFilter=TRUE} then the filter will only be created but not applied.  
-#' You will find it listed in the admin panel Account > All Filters.  You can then use \link{ga_filter_apply_to_view} to apply later on. 
+#' If you don't set `linkFilter=TRUE` then the filter will only be created but not applied.  
+#' You will find it listed in the admin panel Account > All Filters.  You can then use [ga_filter_apply_to_view] to apply later on. 
 #' 
 #' @examples 
 #' 
@@ -393,7 +380,7 @@ ga_filter_add <- function(Filter,
 #' @param method PUT by default. For patch semantics use PATCH
 #' 
 #' @return A filterManagement object
-#' @seealso \url{https://developers.google.com/analytics/devguides/config/mgmt/v3/mgmtReference/#Filters} 
+#' @seealso <https://developers.google.com/analytics/devguides/config/mgmt/v3/mgmtReference/#Filters> 
 #' @examples 
 #' 
 #' \dontrun{
@@ -502,7 +489,7 @@ ga_filter_apply_to_view <- function(filterId,
 #' @param linkId The id of the profile filter link to be updated
 #' @param method PUT by default. Supports patch semantics when set to PATCH
 #' 
-#' @seealso \url{https://developers.google.com/analytics/devguides/config/mgmt/v3/mgmtReference/management/profileFilterLinks}
+#' @seealso <https://developers.google.com/analytics/devguides/config/mgmt/v3/mgmtReference/management/profileFilterLinks>
 #' 
 #' @examples 
 #' 

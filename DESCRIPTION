@@ -1,11 +1,11 @@
 Package: googleAnalyticsR
 Type: Package
-Version: 0.7.1.1
+Version: 1.0.0.1
 Title: Google Analytics API into R
 Description: Interact with the Google Analytics 
   APIs <https://developers.google.com/analytics/>, including 
   the Core Reporting API (v3 and v4), Management API, User Activity API
-  and Multi-Channel Funnel API.
+  GA4's Data API and Admin API and Multi-Channel Funnel API.
 Authors@R: c(person("Mark", "Edmondson", email = "m@sunholo.com",
                   role = c("aut", "cre"),
                   comment = c(ORCID = "0000-0002-8434-3881")),
@@ -17,25 +17,29 @@ Authors@R: c(person("Mark", "Edmondson", email = "m@sunholo.com",
            person("Jas", "Sohi", email = "contact@jassohi.com", role = "ctb"),
            person("Zoran", "Selinger", email = "zselinger@gmail.com", role = "ctb"),
            person("Octavian", "Corlade", email = "octavian.corlade@gmail.com", role = "ctb"))
-URL: http://code.markedmondson.me/googleAnalyticsR/
+URL: https://code.markedmondson.me/googleAnalyticsR/
 BugReports: https://github.com/MarkEdmondson1234/googleAnalyticsR/issues
 Depends:
     R (>= 3.3.0)
 Imports:
     assertthat (>= 0.2.0),
+    cli (>= 2.0.2),
     dplyr (>= 0.8.0),
-    googleAuthR (>= 1.1.1),
+    googleAuthR (>= 1.4.0),
     httr (>= 1.3.1),
     jsonlite (>= 1.5),
     magrittr (>= 1.5),
+    measurementProtocol,
     memoise,
     methods,
     purrr (>= 0.2.2),
-    rlang (>= 0.1.0),
+    rlang (>= 0.4.7),
     stats,
     tibble (>= 2.0.1),
     tidyr (>= 1.0.0),
-    utils
+    usethis,
+    utils,
+    whisker
 Suggests:
     bigQueryR (>= 0.3.1),
     covr,
@@ -43,11 +47,18 @@ Suggests:
     ganalytics,
     googleCloudStorageR (>= 0.2.0),
     htmlwidgets,
-    httptest (>= 3.2.2),
     knitr,
+    lifecycle (>= 1.0.0),
     miniUI (>= 0.1.1),
     rmarkdown,
-    shiny (>= 0.13.2)
+    shiny (>= 1.6.0),
+    testthat
 License: MIT + file LICENSE
 LazyData: TRUE
-RoxygenNote: 7.0.1
+RoxygenNote: 7.1.1
+Config/testthat/edition: 3
+Config/testthat/parallel: true
+Roxygen: list(markdown = TRUE)
+Encoding: UTF-8
+  
+

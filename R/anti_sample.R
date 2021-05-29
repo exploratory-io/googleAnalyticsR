@@ -2,8 +2,6 @@
 #' 
 #' Calculates multiple API calls to avoid sampling
 #' 
-#' @inheritParams make_ga_4_req
-#' @inheritParams google_analytics
 #' @keywords internal
 #' @noRd
 anti_sample <- function(anti_sample_batches,
@@ -158,7 +156,7 @@ anti_sample <- function(anti_sample_batches,
     out
   })
   
-  out <- Reduce(rbind, unsampled_list)
+  out <- dplyr::bind_rows(unsampled_list)
   
   ## get rid of duplicate rows per sample call
   agg_cols <- gsub("ga:","",dimensions) 

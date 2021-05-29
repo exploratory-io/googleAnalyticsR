@@ -1,0 +1,471 @@
+---
+title: "Management API"
+---
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+# auto-auth when done locally
+library(googleAnalyticsR)
+ga_auth(email=Sys.getenv("GARGLE_EMAIL"))
+```
+
+The Management API v3 covers all API calls that are not data reporting related and are for getting meta information about your Google Analytics account or to change account settings.
+
+## Account structure
+
+Shows the details for your account structure (`Accounts > Web-properties > Views (profiles)`) including creation time, user permissions etc.
+
+The most day-to-day useful function is `ga_account_list()` which summarises all account web properties and views available to your user. 
+
+* `ga_account_list()`	- Get account summary including the ViewId
+* `ga_accounts()`	- Get account metadata for your user
+* `ga_webproperty()` -	Get web property 
+* `ga_webproperty_list()` -	List web properties for a particular accountId
+* `ga_view()` - Get single View (Profile)
+* `ga_view_list()` -	List Views (Profile) for a particular accountId/webPropertyId
+
+You can then also get the meta-data for that particular entity via `ga_webproperty()` or `ga_view()`
+
+```{r account structure, message=FALSE, warning=FALSE}
+# ga_account_list is most commonly used
+# (restricted to top 10 with the head() function)
+head(ga_account_list(), n = 10)
+
+# this only lists account meta-data
+ga_accounts()
+
+# this gives meta-data for all web-properties for this accountId
+ga_webproperty_list(47480439)
+
+# this is meta-data for one particular web-property
+ga_webproperty(accountId = 47480439, webPropertyId = "UA-47480439-1")
+
+# this is meta-data for the views under this accountId/webPropertyId
+ga_view_list(accountId = 47480439, webPropertyId = "UA-47480439-1")
+
+# this is meta-data for this particular viewId (profileId)
+ga_view(accountId = 47480439, webPropertyId = "UA-47480439-1", profileId = 81416941)
+```
+
+
+## Helper functions
+
+These are helper utility functions to work with Google Analytics data.
+
+* `google_analytics_meta()` - get a data.frame of available dimensions and metrics, or just use `meta` directly to get the version that comes with the library.
+
+
+```{r}
+# you can just use `meta` as is to get the available metrics,
+# here we just return the first 5 columns and rows for brevity
+head(meta[,1:5])
+
+# or ensure an up to date version by calling the metadata API.
+head(ga_meta())[,1:5]
+```
+
+* `ga_aggregate` - aggregate data down to the dimensions you specify, treating metrics correctly regarding if they should be averaged or summed. This is used internally when using anti-sampling, and is also useful to respond to dimension selections in Shiny dashboards, where you don't want to perform a new API call each time you need aggregated data.  Download all data first in a more unaggregated form, then use this function.
+
+```{r}
+# use `aggregateGAData` so you can on the fly create summary data
+ga_data <- google_analytics(81416156, 
+                            date_range = c("10daysAgo", "yesterday"),
+                            metrics = c("sessions","bounceRate"), dimensions = c("hour","date"))
+
+head(ga_data)
+
+# if we want totals per hour over the dates:
+ga_aggregate(ga_data[,c("hour","sessions")], agg_names = "hour")
+
+# it knows not to sum metrics that are rates:
+ga_aggregate(ga_data[,c("hour","bounceRate")], agg_names = "hour")
+```
+
+
+* `ga_allowed_metric_dim()` - Create named list of allowed GA metrics/dimensions.  This is useful to have nice looking labels for dimension and metric selection pickers, or to create lookup tables.
+
+```{r}
+amd <- ga_allowed_metric_dim()
+head(amd)
+```
+
+## User management
+
+* `ga_users_list()` - list user access to your Google Analytics accounts, web properties or views
+* `ga_users_delete()` - delete user access via email
+* `ga_users_delete_linkid()` - delete user access via the linkId
+* `ga_users_add()` - add users to accounts
+* `ga_users_update()` - update a user
+
+User management follows the recommended workflows outlined in this [Google reference article](https://developers.google.com/analytics/devguides/config/mgmt/v3/user-management). 
+
+The `ga_users_*` functions use the management APIs batching endpoint, to take advantage of the special increased quota limits when dealing with User management that API offers.  For example, every 30 API calls that are batched that deal with user management only increments one API call against your management API quota.  You can have 300 API calls in one batch (e.g. that costs 10 API calls against the quota), and `googleAnalyticsR` will split any list of emails into 300 emails per batch for you, so you can send in all emails you have.
+
+By default, each Google Cloud Project gets 50 write requests per project per day, which if using batching means 1500 write/delete/update user operations per day.
+
+> You will need to use your own Google Cloud Platform project if using any write API operations seriously, otherwise you will be at the mercy of the shared googleAnalyticsR's quota limits. See the section in the Setup page on how to [setup using your own Google Project](http://code.markedmondson.me/googleAnalyticsR/articles/setup.html#your-own-google-project)
+
+To see which users are attached, use `ga_users_list()`.  Each user email is referenced under the `userRef.email` column, whereas the unique IDs used to see which user is linked to where is the `linkId` which is unique to each user and link to your account, web property or view/profile.
+
+Users can be attached at various levels in the hierarchy so you can call the function at various viewing angles.
+
+```r
+# default will list all users that match the id you supply
+ga_users_list(47480439)
+ga_users_list(47480439, webPropertyId = "UA-47480439-2")
+ga_users_list(47480439, webPropertyId = "UA-47480439-2", viewId = 81416156)
+
+# only list users who have account level access
+ga_users_list(47480439, webPropertyId = NULL, viewId = NULL)
+# only list users who have webProperty and above access
+ga_users_list(47480439, webPropertyId = "UA-47480439-2", viewId = NULL)
+```
+
+Users can be attached at account, web-property and view level.
+
+Batching is incorporated for adding users, so you can pass in a vector of emails to add.
+
+```r
+ga_users_add(c("the_email@company.com", "another_email@company.com"), 
+             permissions = "EDIT", accountId = 47480439)
+```
+
+To delete a user from all accounts, web-properties and views takes a few API calls to `ga_users_list()` to find all the possible links, which is done behind the scenes of `ga_users_delete()`.  You can pass the function multiple emails to delete many at once, which is done via batching:
+
+```r
+ga_users_list(47480439)
+
+ga_users_delete("the_email@company.com", 47480439)
+
+# delete many emails at once
+ga_users_delete(c("the_email@company.com", "another_email@company.com"), accountId = 47480439)
+```
+
+For more fine grained control, the below examples shows a workflow to list and delete user access for one user at View level using the linkId.
+
+```r
+# get the linkId for the user you want to delete
+ga_users_list(47480439, webPropertyId = "UA-47480439-2", viewId = 81416156)
+ga_users_delete_linkid("81416156:114834495587136933146", 47480439, 
+                webPropertyId = "UA-47480439-2", viewId = 81416156)
+ 
+# check its gone
+ga_users_list(47480439, webPropertyId = "UA-47480439-2", viewId = 81416156)
+
+# can only delete at level user has access, the above deletion woud have failed if via:
+ga_users_delete_linkid("47480439:114834495587136933146", 47480439)
+
+```
+
+You can also modify existing users via `ga_users_update()` - the below modifies on the web property level:
+
+```r
+# the update to perform
+o <- list(permissions = list(local = list("EDIT")))
+
+ga_users_update("UA-123456-1:1111222233334444",
+                update_object = o,
+                accountId = 123456,
+                webPropertyId = "UA-123456-1")
+```
+
+When using linkIds, make sure to use the correct `linkId` for the level of account, web-property or view you are operating on - the `linkId` starts with the accountId, UA code of web property, or ViewId number to distinguish between the various types.
+
+## Custom variables
+
+Custom variable management for a Google Analytics property.  
+
+* `ga_custom_vars()` - get meta data for a specific custom variable
+* `ga_custom_vars_list()` - list all custom dimensions or metrics
+* `ga_custom_vars_create()` - create a new custom variable
+* `ga_custom_vars_patch()` - update an existing custom variable
+
+Using these you can scale setting up custom dimensions across your Google Analytics web properties.  Custom dimension updates are governed by the same rules as when you create them in the web interface, as this [Google article on custom dimensions and metrics explains](https://support.google.com/analytics/answer/2709828). 
+
+You can't delete custom dimensions, you can only de-activate them for reuse later on.
+
+A workflow is shown below that creates, then updates a custom variable to a new name.
+
+```r
+# create custom var
+ga_custom_vars_create("my_custom_dim",
+                      index = 15,
+                      accountId = 54019251,
+                      webPropertyId = "UA-54019251-4",
+                      scope = "HIT",
+                      active = FALSE)
+
+# view custom dimension in list
+ga_custom_vars_list(54019251, webPropertyId = "UA-54019251-4", type = "customDimensions")
+
+# change a custom dimension
+ga_custom_vars_patch("ga:dimension7",
+                     accountId = 54019251,
+                     webPropertyId = "UA-54019251-4",
+                     name = "my_custom_dim2",
+                     scope = "SESSION",
+                     active = TRUE)
+
+# view custom dimensions again to see change
+ga_custom_vars_list(54019251, webPropertyId = "UA-54019251-4", type = "customDimensions")
+```
+
+
+## AdWords
+
+
+
+* `ga_adwords()`	Get Google Analytics - AdWords Link meta data
+* `ga_adwords_list()`	List AdWords
+* `ga_adwords_add_linkid()` Create a link between and Adwords (Google ads) account and a Google Analytics property
+* `ga_adwords_delete_linkid()` Delete a Google Analytics webProperty-Google Ads link
+
+For many websites Google search advertising, aka Adwords, is a key traffic channel which comes with its own reporting system. 
+Linking Google Analytics with Adwords makes sense as it allows Google ads data to be included in Analytics reports and vice versa. 
+For instance linking the two together can add to the Analytics reports more than 30 metrics and dimensions related to ads (such as the keywords that triggered  an ad or the ad ROI) 
+You can use the function `ga_adwords_list()` to request a list of existing links between Google Analytics and Adwords associated with your user. 
+The `ga_adwords()` function provides meta data about a specific Google Analytics - Adwords link.
+
+If a link between Analytics and Google ads has not been established, this can be done easily via the Management API using the `ga_adwords_add_linkid()` function.
+A requirement is that your email has access rights to both the Analytics and Adwords account. 
+You will also need the Adwords customer ID which  can be obtained via the Adwords API or  UI.
+Also required is the id of the Google Analytics account and associated GA property to which the Adwords account will be linked. 
+This operation will create a new entityAdWordsLinks resource. 
+To remove this  entityAdWordsLinks later if needed the `ga_adwords_delete_linkid()` function can be used. 
+
+```r
+# Lists webProperty-Google Ads links
+ga_adwords_list(accountId = 65973592, webPropertyId = "UA-65973592-1")
+
+# Get information about a web property-Google Ads link 
+ga_adwords(accountId = 65973592, webPropertyId = "UA-65973592-1", webPropertyAdWordsLinkId = "QrcfI2DTSMayqbrLiHYUqw")
+
+# establish a new link between GA and Adwords
+ga_adwords_add_linkid(adwordsAccountId = "280-234-7592", linkName = "Google Ads Link", accountId = "65973592", webPropertyId = "UA-65973592-1")
+
+#check that it has been added
+ga_adwords_list(accountId = 65973592, webPropertyId = "UA-65973592-1")
+
+# delete the link
+ga_adwords_delete_linkid(accountId  = 65973592, webPropertyId ="UA-65973592-1", webPropertyAdWordsLinkId = "ezW2dyaiQcGheWRAo69nCw")
+
+#check that the link has been removed
+ga_adwords_list(accountId = 65973592, webPropertyId = "UA-65973592-1")
+```
+
+
+
+## Custom Data Sources
+
+See and upload custom data sources to Google Analytics
+
+* `ga_custom_datasource()`	- List Custom Data Sources
+* `ga_custom_upload()`	- Custom Data Source Upload Status
+* `ga_custom_upload_file()`- Upload a file to GA custom uploads
+* `ga_custom_upload_list()` - List the files in a GA custom upload
+
+## Experiments
+
+* `ga_experiment()`	- Experiments Meta data
+* `ga_experiment_list()`	- List Experiments
+
+## View Filters
+
+The filter edit functions are contributed by @zselinger which allow you to update filters for your Google Analytics views at scale. 
+
+* `ga_filter()`	- Get specific filter for account
+* `ga_filter_add()`	- Create a new filter and add it to the view (optional).
+* `ga_filter_apply_to_view()`	- Apply an existing filter to view.
+* `ga_filter_delete()`	- Delete a filter from account or remove from view.
+* `ga_filter_list()`	- List filters for account
+* `ga_filter_update()`	- Updates an existing filter.
+* `ga_filter_update_filter_link()`	- Update an existing profile filter link. Patch semantics supported
+* `ga_filter_view()`	- Get specific filter for view (profile)
+* `ga_filter_view_list()`	- List filters for view (profile)
+
+
+## Goals
+
+* `ga_goal()` -	Get goal
+* `ga_goal_list()` -	List goals
+* `ga_goal_add()` - Create and add Goals to a web property
+* `ga_goal_update()` - Modify an existing goal
+
+
+## Example: Copying GA goals
+
+We can programatically copy goal configurations from any GA view (the source) to another GA view (the destination) within an entirely separate property. This can be helpful to maintain standardised goal configurations for multiple properties, and also for GA migrations.
+
+This example will first copy a single goal from one property to another, then use the [`map()`](https://purrr.tidyverse.org/reference/map.html) function from `purrr` to copy multiple goals at once.
+
+We use the Google Analytics demo account as the source view for this example - you can [read more about the demo account here](https://support.google.com/analytics/answer/6367342?hl=en).
+
+## Auth and setup
+
+We authenticate and load the necessary packages, following the instructions from the [documentation](http://code.markedmondson.me/googleAnalyticsR/articles/setup.html#choose-authentication-method).
+
+```{r auth_setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(stringr)
+library(rlist)
+```
+
+## Copying a single goal
+
+For this first section, we copy a single Goal from one view to another. To achieve this, we will:
+
+1. Retrieve the accountId, webPropertyId and viewId from our **source** GA view (the one where our goal to be copied over currently exists).
+2. Get a list of the goals currently configured in the source GA view.
+3. Retrieve the accountId, webPropertyId and viewId from our **destination** GA view (the one where our goal will be copied **to**).
+4. Get the configuration details of a single goal to be copied.
+5. Submit the goal details to our destination property.
+
+### 1. Retrieve the accountId, webPropertyId and viewId from our source GA view
+
+We use the `ga_account_list()` function, which returns an account summary for all available accounts as a dataframe.
+Then, we filter the dataframe down to a specific account and view name using the `filter()` and `str_detect()` functions from the tidyverse.
+
+You can supply your own filter conditions as necessary, to locate your desired view information.
+
+```{r}
+# Account info and list of goals for source, to be copied
+source_account <- ga_account_list() %>% 
+  filter(str_detect(accountName, "Demo Account"), str_detect(viewName, "Master"))
+source_account
+```
+
+### 2. Get a list of the goals currently configured from our source GA view
+
+Now that we have the account summary, we can use the view details to get a list of goal data, with each item in the list showing goal details.
+
+```{r get_goals, warning = FALSE, message = FALSE}
+source_goals <- ga_goal_list(source_account$accountId, source_account$webPropertyId, source_account$viewId)
+source_goals
+```
+
+### 3. Retrieve the accountId, webPropertyId and viewId from our destination GA view
+
+We again filter the results from `ga_account_list()`, to get account information for our destination GA property. In this example, we filter for "Your_Account" and the view called "Filtered".
+
+The `dest_account` dataframe should contain the same columns and data types as your `source_account` dataframe.
+
+```{r warning = FALSE, message = FALSE}
+# Account info for destination account
+dest_account <- ga_account_list() %>% 
+  filter(str_detect(accountName, "Your_Account"), str_detect(viewName, "Filtered"))
+```
+
+### 4. Get the configuration details of a single goal to be copied.
+
+For this first example, we add a single goal (ID 1) to the destination view, passed as a list to the [`ga_goal_add()`](http://code.markedmondson.me/googleAnalyticsR/reference/ga_goal_add.html) function. 
+
+We now use the `ga_goal()` function to retrieve the goal specifications as a list. We use `ga_goal()` because it provides the goal configuration data in the necessary format for our `goal_add()` request. 
+
+In the example below, we retrieve the details for the goal in slot 1. 
+
+```{r get_goal_list, warning = FALSE, message = FALSE}
+# Get goal ID 1
+goal_one <- ga_goal(source_account$accountId, source_account$webPropertyId, source_account$viewId, 
+                    goalId = 1) %>% 
+  # Strip out instance-specific metadata (property, profile, view data and original creation dates)
+  list.remove( c("accountId", "webPropertyId", "selfLink", "internalWebPropertyId", "profileId", "parentLink", "created", "updated"))
+
+goal_one
+```
+
+### 5. Submit the goal details to our destination property.
+
+We can then use the goal details contained in `goal_one` to submit a `ga_goal_add()` request to our destination property.
+
+```{r copy_goal, eval=FALSE}
+ga_goal_add(goal_one, dest_account$accountId, dest_account$webPropertyId, dest_account$viewId)
+```
+
+All being well, you should see console output containing the details of your newly submitted goal in the destination property.
+
+You can repeat the above steps for any goal IDs you'd like to copy over, and to one or multiple destination views.
+
+---
+
+## Copying multiple goals
+
+Using the [`map()`](https://purrr.tidyverse.org/reference/map.html) function from the `tidyverse`, we can quickly scale up this approach. We can copy all goals from a view at once, rather than one at a time.
+
+First, we define a function to copy a single goal, given a goal ID, details of the source view ID and destination view IDs. In effect, we make a function to perform steps 1-5 from the "Copying a single goal" section in this page.
+
+```{r copy_function, eval=FALSE}
+# Takes a goal ID, source account information & dest account information, copies goal over
+copy_goal <- function(goal_id, source_df, dest_df) {
+  source_goal <- ga_goal(source_df$accountId, source_df$webPropertyId, source_df$viewId, goal_id) %>% 
+    list.remove( c("accountId", "webPropertyId", "selfLink", "internalWebPropertyId", "profileId", "parentLink", "created", "updated")) 
+  ga_goal_add(source_goal, dest_df$accountId, dest_df$webPropertyId, dest_df$viewId)
+}
+```
+
+Having our goal-copying function defined, it is a simple step to apply it across all goal IDs from the source view.
+
+The example below re-uses the `source_goals`, `source_account` and `dest_account` objects which were created earlier.
+
+```{r copy_loop, eval=FALSE}
+# For each goal ID in our source view, apply the copy_goal function, 
+# using source_account and dest_account account parameters as fixed 2nd / third arguments
+map(source_goals$id, copy_goal, source_account, dest_account)
+```
+
+## Write request limits
+
+At the time of writing, there is a daily limit of 50 write requests per day, per Google Cloud project, which restricts the number of times this can be performed. However, it is possible to request that this limit be increased.
+
+For more information, check the Google documentation at https://developers.google.com/analytics/devguides/config/mgmt/v3/limits-quotas#write_requests.
+
+## Remarketing segments
+
+Remarketing segments lets you target users in Google Ads from Google Analytics segments.
+
+* `ga_remarketing_estimate()` -	Estimate number of users added to the segment yesterday
+* `ga_remarketing_get()` -	Get a remarketing audience
+* `ga_remarketing_list()` -	List remarketing audiences
+* `ga_remarketing_build()` - Create definitions to be used within `ga_remarketing_create()`
+* `ga_remarketing_create()` - Create a remarketing audience
+
+A demo of how you could use this based on your existing GA segments is:
+
+```r
+adword_list <- ga_adwords_list(123456, "UA-123456-1")
+
+adword_link <- ga_adword(adword_list$id[[1]])
+
+segment_list <- ga_segment_list()$items$definition
+
+my_remarketing1 <- ga_remarketing_build(segment_list[[1]], 
+                      state_duration = "TEMPORARY",
+                      membershipDurationDays = 90, 
+                      daysToLookBack = 14)
+my_remarketing2 <- ga_remarketing_build(segment_list[[2]], 
+                      state_duration = "PERMANENT",
+                      membershipDurationDays = 7, 
+                      daysToLookBack = 31)
+
+# state based only can include exclusions
+ga_remarketing_create(adwords_link = adword_link,
+                     include = my_remarketing1, exclude = my_remarketing2,
+                     audienceType = "STATE_BASED", name = "my_remarketing_seg1")
+```
+
+## Unsampled reports
+
+Available only for GA360 accounts, you will need to authenticate with the Google drive scope to get download access. The download functions are contributed by @j450h1
+
+* `ga_unsampled()` -	Get Unsampled Report Meta Data
+* `ga_unsampled_download()` -	Download Unsampled Report from Google Drive
+* `ga_unsampled_list()` -	List Unsampled Reports
+
+## Users
+
+* `ga_clientid_hash()` - Creates the clientID hash that is used in BigQuery GA360 exports
+* `ga_clientid_deletion()` - Delete a website visitor from Google Analytics
+
+
+
+
+
+

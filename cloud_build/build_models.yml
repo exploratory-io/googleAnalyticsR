@@ -1,0 +1,121 @@
+steps:
+  - name: gcr.io/kaniko-project/executor:latest
+    args:
+      - -f
+      - Dockerfile
+      - --destination
+      - gcr.io/mark-edmondson-gde/ga-model-examples:latest
+      - --context=dir:///workspace/inst/models/build_models/
+      - --cache=true
+    dir: inst/models/build_models/
+  - name: gcr.io/kaniko-project/executor:latest
+    args:
+      - -f
+      - Dockerfile
+      - --destination
+      - gcr.io/mark-edmondson-gde/ga-model-examples:$BUILD_ID
+      - --context=dir:///workspace/inst/models/build_models/
+      - --cache=true
+    dir: inst/models/build_models/
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - gcloud secrets versions access latest --secret=github-ssh > /root/.ssh/id_rsa
+    id: git secret
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  - name: gcr.io/cloud-builders/git
+    entrypoint: bash
+    args:
+      - -c
+      - |-
+        chmod 600 /root/.ssh/id_rsa
+        cat <<EOF >known_hosts
+        github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+        EOF
+        cat <<EOF >/root/.ssh/config
+        Hostname github.com
+        IdentityFile /root/.ssh/id_rsa
+        EOF
+        mv known_hosts /root/.ssh/known_hosts
+        git config --global user.name "googleCloudRunner"
+        git config --global user.email "cr_buildstep_gitsetup@googleCloudRunner.com"
+    id: git setup script
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  - name: gcr.io/cloud-builders/git
+    args:
+      - clone
+      - git@github.com:MarkEdmondson1234/googleAnalyticsR
+      - payload
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  - name: gcr.io/mark-edmondson-gde/ga-model-examples:$BUILD_ID
+    args:
+      - Rscript
+      - -e
+      - "library(googleAnalyticsR)\nlibrary(dygraphs)\nlibrary(xts)\nlibrary(shiny)\nlibrary(plotly)\nlibrary(CausalImpact)\n\nsource(\"inst/models/model_scripts/ua-causalimpact.R\")\nga_model_edit(\"inst/models/examples/ga-effect.gamr\",\n
+        \             outputShiny = dygraphs::dygraphOutput, \n              renderShiny
+        = dygraphs::renderDygraph, \n              inputShiny = shiny::dateInput(\"event_date\",
+        \n                                            label = \"Event Date\",\n                                            value
+        = Sys.Date() - 30))\n\nsource(\"inst/models/model_scripts/ga4-dygraphs.R\")\n\nuiInput
+        <- shiny::selectInput(\"metrics\", \n                              label =
+        \"Pick a Metric\",\n                              choices = c(\"sessions\",\"newUsers\",\"conversions\"),\n
+        \                             multiple = TRUE)\nga_model_edit(\"inst/models/examples/ga4-trend.gamr\",\n
+        \             data_f = data_f, model_f = model_f, output_f = output_f, \n
+        \             outputShiny = dygraphs::dygraphOutput, \n              renderShiny
+        = dygraphs::renderDygraph, \n              inputShiny = uiInput)\n\nsource(\"inst/models/model_scripts/ua-decomp.R\")\nga_model_edit(\"inst/models/examples/decomp_ga.gamr\",\n
+        \             data_f = data_f, model_f = model_f, output_f = output_f, \n
+        \             outputShiny = shiny::plotOutput, \n              renderShiny
+        = shiny::renderPlot)\n\ndate_input <- shiny::dateRangeInput(\"date_range\",
+        \"Dates\", \n                                    start = Sys.Date()-300, end
+        = Sys.Date()-1)\nfreq_input <- shiny::selectInput(\"frequency\", \"Periodic
+        Frequency\",\n                                 choices = c(7,28,365))\nmetric_input
+        <- shiny::selectInput(\"metric\", \"Metric\", \n                                   choices
+        = c(\"sessions\",\"users\",\"pageviews\"))\nsource(\"inst/models/model_scripts/decomp_advanced.R\")\nga_model_edit(\"inst/models/examples/decomp_ga_advanced.gamr\",
+        \n              description = \"Performs decomposition (Advanced)\",\n              data_f
+        = data_f, model_f = model_f, output_f = output_f, \n              outputShiny
+        = shiny::plotOutput, renderShiny = shiny::renderPlot,\n              inputShiny
+        = shiny::tagList(date_input, freq_input))\n\nsource(\"inst/models/model_scripts/ua-time-normalised.R\")\n\n\nis
+        <- shiny::tagList(\n  shiny::numericInput(\"first_day\", \"First day minimum
+        pageviews\",\n                               value = 2, min=0, max=100),\n
+        \ shiny::numericInput(\"total_min_cutoff\", \"Minimum Total pageviews\",\n
+        \                            value = 500, min = 0, max = 1000),\n  shiny::numericInput(\"days_live\",
+        label = \"Days Live\",\n                               value = 60, min = 10,
+        max = 400),\n  shiny::textInput(\"page_regex\", label = \"Page filter regex\",
+        value = \".*\")\n)\n\nga_model_edit(\"inst/models/examples/time-normalised.gamr\",\n
+        \             data_f = data_f, model_f = model_f, output_f = output_f, \n
+        \             outputShiny = plotly::plotlyOutput, \n              renderShiny
+        = plotly::renderPlotly,\n              inputShiny = is)\n"
+    dir: payload
+  - name: gcr.io/cloud-builders/git
+    args:
+      - add
+      - --all
+    dir: payload
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  - name: gcr.io/cloud-builders/git
+    args:
+      - commit
+      - -a
+      - -m
+      - build_models from ${COMMIT_SHA}
+    dir: payload
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  - name: gcr.io/cloud-builders/git
+    args:
+      - push
+    dir: payload
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+timeout: 2400s
+#Generated by googleCloudRunner::cr_build_write at 2021-02-02 13:30:28

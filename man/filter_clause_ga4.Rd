@@ -13,14 +13,13 @@ filter_clause_ga4(filters, operator = c("OR", "AND"))
 }
 \value{
 An object of class \code{dim_fil_ga4} or \code{met_fil_ga4}
-  for use in \code{\link{make_ga_4_req}}
 }
 \description{
 Make a dimension or metric filter clause object
 }
 \details{
 If you have dimension and metric filters,
-  make the clauses in two separate calls, then pass the objects to \link{make_ga_4_req}
+make the clauses in two separate calls
 }
 \examples{
 
@@ -64,7 +63,8 @@ ga_data1 <- google_analytics(ga_id,
 
 }
 \seealso{
-Other filter functions: \code{\link{dim_filter}},
-  \code{\link{met_filter}}
+Other filter functions: 
+\code{\link{dim_filter}()},
+\code{\link{met_filter}()}
 }
 \concept{filter functions}

@@ -1,5 +1,3 @@
-context("Unsampled Download tests")
-
 test_that("Scope set correctly for Google Drive tests", {
   scopes <- getOption("googleAuthR.scopes.selected")
   
@@ -9,6 +7,7 @@ test_that("Scope set correctly for Google Drive tests", {
 
 test_that("Can list and download unsampled files", {
   skip_on_cran()
+  skip_on_travis()
   dl <- ga_unsampled_list(accountId = accountId,
                           webPropertyId = webPropId,
                           profileId = ga_id)

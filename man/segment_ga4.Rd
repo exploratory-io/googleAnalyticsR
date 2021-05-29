@@ -4,8 +4,12 @@
 \alias{segment_ga4}
 \title{Make a segment object for use}
 \usage{
-segment_ga4(name, segment_id = NULL, user_segment = NULL,
-  session_segment = NULL)
+segment_ga4(
+  name,
+  segment_id = NULL,
+  user_segment = NULL,
+  session_segment = NULL
+)
 }
 \arguments{
 \item{name}{The name of the segment for the reports.}
@@ -20,16 +24,16 @@ segment_ga4(name, segment_id = NULL, user_segment = NULL,
 a segmentFilter object. You can pass a list of these to the request.
 }
 \description{
-A Segment is a subset of the Analytics data. 
-For example, of the entire set of users, one Segment 
+A Segment is a subset of the Analytics data.
+For example, of the entire set of users, one Segment
 might be users from a particular country or city.
 }
 \details{
 \code{segment_ga4} is the top hierarchy of segment creation, for which you will also need:
 \itemize{
- \item \link{segment_define} : AND combination of segmentFilters
- \item \link{segment_vector_simple} or \link{segment_vector_sequence}
- \item \link{segment_element} that are combined in OR lists for \code{segment_vectors_*}
+\item \link{segment_define} : AND combination of segmentFilters
+\item \link{segment_vector_simple} or \link{segment_vector_sequence}
+\item \link{segment_element} that are combined in OR lists for \verb{segment_vectors_*}
 }
 }
 \examples{
@@ -127,9 +131,10 @@ segment_seq_example <- google_analytics(ga_id,
 
 }
 \seealso{
-Other v4 segment functions: \code{\link{segment_define}},
-  \code{\link{segment_element}},
-  \code{\link{segment_vector_sequence}},
-  \code{\link{segment_vector_simple}}
+Other v4 segment functions: 
+\code{\link{segment_define}()},
+\code{\link{segment_element}()},
+\code{\link{segment_vector_sequence}()},
+\code{\link{segment_vector_simple}()}
 }
 \concept{v4 segment functions}
